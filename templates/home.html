@@ -1,0 +1,104 @@
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+
+{% block title %}EduHub - Главная страница{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h1>Добро пожаловать в EduHub!</h1>
+    <p class="subtitle">Система управления учебным заведением</p>
+
+    <div class="stats">
+        <div class="stat-card">
+            <h3>{{ courses_count }}</h3>
+            <p>Учебных курсов</p>
+        </div>
+        <div class="stat-card">
+            <h3>0</h3>
+            <p>Преподавателей</p>
+        </div>
+        <div class="stat-card">
+            <h3>0</h3>
+            <p>Студентов</p>
+        </div>
+        <div class="stat-card">
+            <h3>0</h3>
+            <p>Занятий в расписании</p>
+        </div>
+    </div>
+</div>
+
+<div class="features">
+    <h2>Функциональность системы:</h2>
+    <ul>
+        <li>📚 Управление учебными курсами</li>
+        <li>👨‍🏫 Учёт преподавателей и студентов</li>
+        <li>📅 Составление расписания занятий</li>
+        <li>📊 Отчёты и аналитика успеваемости</li>
+        <li>📄 Электронный документооборот</li>
+        <li>🔐 Ролевой доступ (администратор, преподаватель, студент)</li>
+    </ul>
+</div>
+
+<div class="next-steps">
+    <h2>План разработки:</h2>
+    <ol>
+        <li><strong>✅ Базовый проект Django</strong></li>
+        <li><strong>✅ Модель "Курсы" и админка</strong></li>
+        <li><strong>✅ Главная страница</strong> (вы здесь!)</li>
+        <li>Модель "Преподаватели"</li>
+        <li>Модель "Студенты"</li>
+        <li>Страница со списком курсов</li>
+        <li>Расписание занятий</li>
+        <li>Документооборот</li>
+        <li>Отчёты</li>
+    </ol>
+</div>
+
+<style>
+    .welcome-section {
+        text-align: center;
+        padding: 3rem 0;
+        background: linear-gradient(135deg, #3498db, #2c3e50);
+        color: white;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-top: 0.5rem;
+    }
+    .stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    .stat-card {
+        background: rgba(255,255,255,0.1);
+        padding: 1.5rem;
+        border-radius: 8px;
+        min-width: 150px;
+    }
+    .stat-card h3 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .features, .next-steps {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+    .features li, .next-steps li {
+        margin: 0.8rem 0;
+        padding-left: 1rem;
+    }
+    .next-steps li strong {
+        color: #2c3e50;
+    }
+</style>
+{% endblock %}
