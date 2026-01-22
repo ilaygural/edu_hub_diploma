@@ -19,11 +19,14 @@ from django.contrib import admin
 from django.urls import path, include
 
 from config.views import page_not_found, server_error
+from core import views
 from core.views import home
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),
+    path('courses/', views.courses_list, name='courses'),
+    path('courses/<int:course_pk>/', views.course_details, name='course_detail'),
     # path("", include("schedule.urls")),
 ]  + debug_toolbar_urls()
 

@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Course
 
 # Create your views here.
@@ -43,10 +43,10 @@ def schedule(request):
 
 
 def courses_list(request):
-    return HttpResponse("Список курсов")
+    courses = Course.objects.all()
+    return render(request, 'core/courses.html', {'courses': courses})
 
 
-def course_detail(request, course_id):
-    if course_id > 100:  # несуществующий курс
-        return redirect('home', permanent=False)
-    return HttpResponse(f"Курс {course_id}")
+def course_details(request, course_id, pk):
+    course = get_object_or_404(Course, id=pk)
+    return render(request, 'core/course_detail.html', {'course': course})

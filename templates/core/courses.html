@@ -1,0 +1,10 @@
+<!-- templates/core/courses.html -->
+{% extends 'base.html' %}
+{% block content %}
+<h2>Наши курсы</h2>
+{% for course in courses %}
+    <a href="{% url 'course_detail' course.id %}">
+        {{ course.title }} ({{ course.code }})
+    </a>
+{% endfor %}
+{% endblock %}

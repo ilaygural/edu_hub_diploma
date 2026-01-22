@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ course.title }}</h2>
+<p>Код: {{ course.code }}</p>
+<p>{{ course.description }}</p>
+<a href="{% url 'courses' %}">← Назад к списку</a>
+{% endblock %}
