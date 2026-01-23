@@ -5,6 +5,6 @@
 {% for course in courses %}
     <a href="{% url 'course_detail' course.id %}">
         {{ course.title }} ({{ course.code }})
-    </a>
+    </a><br>
 {% endfor %}
 {% endblock %}
