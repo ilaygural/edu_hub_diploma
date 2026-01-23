@@ -29,6 +29,20 @@ def course_detail_by_slug(request, slug):
     course = get_object_or_404(Course, slug=slug)
     return render(request, 'core/course_detail.html', {'course': course})
 
+
+def courses_list(request):
+    search_query = request.GET.get('search', '')
+
+    if search_query:
+        courses = Course.objects.filter(title__icontains=search_query)
+    else:
+        courses = Course.objects.all()
+
+    return render(request, 'core/courses.html', {
+        'courses': courses,
+        'search_query': search_query,
+    })
+
 # def schedule(request):
 #     data = {
 #         'title': 'Расписание занятий',
