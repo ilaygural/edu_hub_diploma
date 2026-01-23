@@ -1,9 +1,8 @@
-# config/urls.py
-from django.contrib import admin
 from django.urls import path
+from . import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    # Пока убираем остальные маршруты - добавим позже
+    path('', views.home, name='home'),
+    path('courses/', views.courses_list, name='courses'),
+    path('courses/<int:pk>/', views.course_detail, name='course_detail'),
 ]
-

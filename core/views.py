@@ -47,6 +47,6 @@ def courses_list(request):
     return render(request, 'core/courses.html', {'courses': courses})
 
 
-def course_details(request, course_id, pk):
+def course_detail(request, pk):
     course = get_object_or_404(Course, id=pk)
     return render(request, 'core/course_detail.html', {'course': course})

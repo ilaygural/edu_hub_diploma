@@ -24,9 +24,7 @@ from core.views import home
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', home, name='home'),
-    path('courses/', views.courses_list, name='courses'),
-    path('courses/<int:course_pk>/', views.course_details, name='course_detail'),
+    path('', include('core.urls')),
     # path("", include("schedule.urls")),
 ]  + debug_toolbar_urls()
 
