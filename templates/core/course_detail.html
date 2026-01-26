@@ -1,7 +1,53 @@
 {% extends 'base.html' %}
+
+{% block title %}{{ course.title|capfirst }}{% endblock %}
+
 {% block content %}
-<h2>{{ course.title }}</h2>
-<p>Код: {{ course.code }}</p>
-<p>{{ course.description }}</p>
-<a href="{% url 'courses' %}">← Назад к списку</a>
+<!-- capfirst для заголовка -->
+<h1>{{ course.title|capfirst }}</h1>
+
+<div class="course-meta">
+    <p><strong>Код курса:</strong> {{ course.code|upper }}</p>
+    <p><strong>URL (slug):</strong> {{ course.slug }}</p>
+</div>
+
+<!-- default для пустого описания -->
+<div class="course-description">
+    <h3>Описание</h3>
+    <p>{{ course.description|default:"Описание курса пока не добавлено."|linebreaks }}</p>
+</div>
+
+<div class="actions">
+    <a href="{% url 'courses' %}" class="btn">← К списку курсов</a>
+    <!-- pluralize для потенциального количества занятий -->
+    <small>Курс содержит {{ 0|default:"0" }} заняти{{ 0|pluralize:"е,я" }}</small>
+</div>
+
+<style>
+.course-meta {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 5px;
+    margin: 1rem 0;
+}
+.course-description {
+    margin: 2rem 0;
+    line-height: 1.6;
+}
+.actions {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.btn {
+    background: #3498db;
+    color: white;
+    padding: 0.7rem 1.5rem;
+    text-decoration: none;
+    border-radius: 5px;
+}
+</style>
 {% endblock %}
