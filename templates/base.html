@@ -12,32 +12,38 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
         body {
             background: #f8f9fa;
             color: #333;
             line-height: 1.6;
         }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
         }
+
         header {
             background: #2c3e50;
             color: white;
             padding: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
+
         .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+
         .logo {
             font-size: 1.8rem;
             font-weight: bold;
             color: #3498db;
         }
+
         .logo span {
             background: #2ecc71;
             color: white;
@@ -46,19 +52,23 @@
             font-size: 0.9rem;
             margin-left: 10px;
         }
+
         nav a {
             color: white;
             text-decoration: none;
             margin-left: 1.5rem;
             font-weight: 500;
         }
+
         nav a:hover {
             color: #3498db;
         }
+
         main {
             padding: 2rem 0;
             min-height: 70vh;
         }
+
         footer {
             background: #34495e;
             color: #ecf0f1;
@@ -66,6 +76,7 @@
             padding: 2rem 0;
             margin-top: 3rem;
         }
+
         .status {
             background: #e74c3c;
             color: white;
@@ -78,35 +89,57 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    🎓 EduHub
-                    <span>Дипломный проект</span>
-                </div>
-                <nav>
-                    <a href="{% url 'home' %}">Главная</a>
-                    <a href="{% url 'courses' %}">Курсы</a>
-                    <a href="/admin/">Админка</a>
-                    <a href="https://github.com/ilaygural/edu_hub_diploma.git" target="_blank">GitHub</a>
-                </nav>
+<header>
+    <div class="container">
+        <div class="header-content">
+            <div class="logo">
+                🎓 EduHub
+                <span>Дипломный проект</span>
             </div>
-        </div>
-    </header>
+            <!-- В шапке, где навигация -->
+            <nav>
+                {% for item in main_menu %}
+                    <a href="{% url item.url_name %}"
+                       class="{% if item.active %}active{% endif %}">
+                        {{ item.title }}
+                    </a>
+                {% endfor %}
+            </nav>
 
-    <main class="container">
-        {% block content %}
+            <style>
+                nav a {
+                    margin-right: 1rem;
+                    text-decoration: none;
+                    color: white;
+                    padding: 5px 10px;
+                    border-radius: 4px;
+                }
+
+                nav a.active {
+                    background: #3498db;
+                    color: white;
+                }
+
+                nav a:hover {
+                    background: #f0f0f0;
+                }
+            </style>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    {% block content %}
         <!-- Сюда подставляется контент страниц -->
-        {% endblock %}
-    </main>
+    {% endblock %}
+</main>
 
-    <footer>
-        <div class="container">
-            <p>© 2024-2026 EduHub — Система управления учебным заведением</p>
-            <p>Разработка: Илья Гураль | Django 5.2 | Python 3.13 | SQLite</p>
-            <div class="status">Статус: в разработке | Защита: июнь 2026</div>
-        </div>
-    </footer>
+<footer>
+    <div class="container">
+        <p>© 2024-2026 EduHub — Система управления учебным заведением</p>
+        <p>Разработка: Илья Гураль | Django 5.2 | Python 3.13 | SQLite</p>
+        <div class="status">Статус: в разработке | Защита: июнь 2026</div>
+    </div>
+</footer>
 </body>
 </html>

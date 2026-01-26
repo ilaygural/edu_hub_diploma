@@ -42,7 +42,15 @@ def courses_list(request):
         'courses': courses,
         'search_query': search_query,
     })
+# core/views.py - добавить временные views
+def teachers(request):
+    return render(request, 'core/teachers.html', {'title': 'Преподаватели'})
 
+def schedule(request):
+    return render(request, 'core/schedule.html', {'title': 'Расписание'})
+
+def about(request):
+    return render(request, 'core/about.html', {'title': 'О нас'})
 # def schedule(request):
 #     data = {
 #         'title': 'Расписание занятий',
