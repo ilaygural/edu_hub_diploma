@@ -1,0 +1,96 @@
+<footer>
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>EduHub</h4>
+                <p>CRM для учебного заведения</p>
+                <p>Дипломный проект | Защита: июнь 2026</p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Технологии</h4>
+                <ul>
+                    <li>Django 5.2</li>
+                    <li>Python 3.13</li>
+                    <li>SQLite / PostgreSQL</li>
+                    <li>HTML5 / CSS3</li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Навигация</h4>
+                <p>
+                    <a href="{% url 'home' %}">Главная</a> |
+                    <a href="{% url 'courses' %}">Курсы</a> |
+                    <a href="{% url 'about' %}">О проекте</a> |
+                    <a href="/admin/">Админка</a>
+                </p>
+                <p>
+                    <a href="https://github.com/ilaygural/edu_hub_diploma" target="_blank">
+                        GitHub репозиторий
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>© 2024-2026 EduHub — Система управления учебным заведением</p>
+            <p>Разработка: Илья Гураль | Статус: <span class="status">в разработке</span></p>
+        </div>
+    </div>
+</footer>
+
+<style>
+footer {
+    background: #34495e;
+    color: #ecf0f1;
+    padding: 3rem 0 1.5rem;
+    margin-top: 3rem;
+}
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+.footer-section {
+    flex: 1;
+    min-width: 250px;
+}
+.footer-section h4 {
+    color: #3498db;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
+}
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+}
+.footer-section li {
+    margin: 0.5rem 0;
+}
+.footer-section a {
+    color: #ecf0f1;
+    text-decoration: none;
+}
+.footer-section a:hover {
+    color: #3498db;
+    text-decoration: underline;
+}
+.footer-bottom {
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid #4a6278;
+    color: #bdc3c7;
+    font-size: 0.9rem;
+}
+.status {
+    background: #e74c3c;
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+}
+</style>

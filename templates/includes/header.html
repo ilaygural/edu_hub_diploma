@@ -1,0 +1,65 @@
+<header>
+    <div class="container">
+        <div class="header-content">
+            <div class="logo">
+                🎓 EduHub
+                <span>Дипломный проект</span>
+            </div>
+            <nav>
+                {% for item in main_menu %}
+                    <a href="{% url item.url_name %}"
+                       class="{% if item.active %}active{% endif %}">
+                        {{ item.title }}
+                    </a>
+                {% endfor %}
+            </nav>
+        </div>
+    </div>
+</header>
+
+<style>
+header {
+    background: #2c3e50;
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #3498db;
+}
+.logo span {
+    background: #2ecc71;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    margin-left: 10px;
+}
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 1.5rem;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+nav a:hover {
+    background: rgba(255,255,255,0.1);
+}
+nav a.active {
+    background: #3498db;
+    color: white;
+}
+</style>
