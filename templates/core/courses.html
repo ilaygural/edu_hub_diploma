@@ -15,26 +15,61 @@
     {% endif %}
 </form>
 
-<!-- Статистика с фильтром length -->
+<!-- Статистика -->
 <p class="stats">Найдено: <strong>{{ courses|length }}</strong> курс{{ courses|length|pluralize:"а,ов" }}</p>
 
 <!-- Список курсов -->
 {% for course in courses %}
-<div class="course-card">
-    <!-- capfirst для заголовка -->
-    <a href="{% url 'course_detail' course.id %}">
+<!-- with для локальной переменной -->
+{% with short_desc=course.description|truncatewords:25 %}
+<div class="course-card
+            {% if forloop.first %}first-course{% endif %}
+            {% if forloop.last %}last-course{% endif %}
+            {% cycle 'odd' 'even' %}">
+
+    <!-- Нумерация -->
+    <div class="course-header">
+        <span class="course-number">Курс #{{ forloop.counter }}</span>
+        {% if forloop.first %}
+        <span class="badge">Новый</span>
+        {% endif %}
+    </div>
+
+    <!-- Заголовок -->
+    <a href="{% url 'course_by_slug' course.slug %}">
         <h3>{{ course.title|capfirst }}</h3>
     </a>
-    <p class="code">Код: <strong>{{ course.code|upper }}</strong></p>
 
-    <!-- default для пустого описания + truncatewords -->
-    <p class="description">
-        {{ course.description|default:"Описание пока не добавлено"|truncatewords:30 }}
+    <!-- Код курса -->
+    <p class="code">
+        <strong>Код:</strong> {{ course.code|upper }}
+        {% if course.slug %}
+        | <strong>URL:</strong> /courses/{{ course.slug }}/
+        {% endif %}
     </p>
 
-    <!-- slugify для примера (можно пока скрыть) -->
-    <!-- <small>URL: {{ course.slug|slugify }}</small> -->
+    <!-- Описание -->
+    <p class="description">
+        {{ course.description|default:"Описание пока не добавлено." }}
+    </p>
+
+    <!-- Краткое описание (через with) -->
+    {% if course.description %}
+    <p class="short-desc">
+        <em>Кратко:</em> {{ short_desc }}
+    </p>
+    {% endif %}
+
+    <!-- Информация о итерации (для отладки, можно скрыть) -->
+    <div class="iteration-info">
+        <small>
+            Позиция: {{ forloop.counter }} из {{ forloop.revcounter }} осталось |
+            {% if not forloop.last %}Следующий: {{ forloop.next.title|default:"-" }}{% endif %}
+        </small>
+    </div>
+
 </div>
+{% endwith %}
 {% empty %}
 <p class="empty">
     {% if search_query %}
@@ -46,25 +81,82 @@
 {% endfor %}
 
 <style>
-.stats {
-    margin-bottom: 1.5rem;
-    color: #666;
-    font-size: 1.1rem;
+.course-card {
+    background: white;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    position: relative;
 }
-.course-card .code {
-    color: #7f8c8d;
+.course-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.course-card.first-course {
+    border-left: 5px solid #2ecc71;
+}
+.course-card.last-course {
+    border-right: 5px solid #3498db;
+}
+.course-card.odd {
+    background: #f9f9f9;
+}
+.course-card.even {
+    background: white;
+}
+.course-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+.course-number {
+    background: #34495e;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
     font-size: 0.9rem;
 }
-.course-card .description {
+.badge {
+    background: #e74c3c;
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+}
+.code {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+}
+.description {
     color: #333;
     line-height: 1.5;
-    margin-top: 0.5rem;
+    margin: 1rem 0;
+}
+.short-desc {
+    color: #666;
+    font-size: 0.9rem;
+    border-left: 3px solid #f1c40f;
+    padding-left: 0.8rem;
+    margin: 0.5rem 0;
+}
+.iteration-info {
+    margin-top: 1rem;
+    padding-top: 0.8rem;
+    border-top: 1px dashed #ddd;
+    color: #95a5a6;
+    font-size: 0.8rem;
 }
 .empty {
     text-align: center;
-    padding: 2rem;
+    padding: 3rem;
     color: #95a5a6;
     font-style: italic;
+    background: #f8f9fa;
+    border-radius: 8px;
 }
 </style>
 {% endblock %}
