@@ -2,29 +2,37 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/courses.css' %}">
+    <link rel="stylesheet" href="{% static 'css/courses.css' %}">
 {% endblock %}
 
 {% block title %}{{ course.title|capfirst }}{% endblock %}
 
 {% block content %}
-<!-- capfirst для заголовка -->
-<h1>{{ course.title|capfirst }}</h1>
+    <!-- capfirst для заголовка -->
+    <h1>{{ course.title|capfirst }}</h1>
 
-<div class="course-meta">
-    <p><strong>Код курса:</strong> {{ course.code|upper }}</p>
-    <p><strong>URL (slug):</strong> {{ course.slug }}</p>
-</div>
+    <div class="course-meta">
+        <p><strong>Код курса:</strong> {{ course.code|upper }}</p>
+        <p><strong>URL (slug):</strong> {{ course.slug }}</p>
+    </div>
 
-<!-- default для пустого описания -->
-<div class="course-description">
-    <h3>Описание</h3>
-    <p>{{ course.description|default:"Описание курса пока не добавлено."|linebreaks }}</p>
-</div>
+    <!-- default для пустого описания -->
+    <div class="course-description">
+        <h3>Описание</h3>
+        <p>{{ course.description|default:"Описание курса пока не добавлено."|linebreaks }}</p>
+    </div>
 
-<div class="actions">
-    <a href="{% url 'courses' %}" class="btn">← К списку курсов</a>
-    <!-- pluralize для потенциального количества занятий -->
-    <small>Курс содержит {{ 0|default:"0" }} заняти{{ 0|pluralize:"е,я" }}</small>
-</div>
+    <div class="actions">
+        <a href="{% url 'courses' %}" class="btn">← К списку курсов</a>
+        <!-- pluralize для потенциального количества занятий -->
+        <small>Курс содержит {{ 0|default:"0" }} занятий{{ 0|pluralize:"е,я" }}</small>
+
+        <!-- Форматирование даты -->
+        <small class="text-muted">
+            Создан: {{ course.created_at|date:"d E Y" }} <!-- Выведет "29 января 2026" -->
+        </small>
+
+        <!-- Обрезка текста -->
+        <p>{{ course.description|truncatechars:150 }}</p> <!-- Обрежет описание до 150 символов -->
+    </div>
 {% endblock %}

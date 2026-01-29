@@ -11,7 +11,7 @@
         {% for course in popular_courses %}
         <li>
             <a href="{% url 'course_by_slug' course.slug %}">
-                {{ course.title|truncatewords:4 }}
+                {{ course.title|truncatewords:10}}
             </a>
         </li>
         {% empty %}
