@@ -1,3 +1,4 @@
+{% load core_tags %}
 <footer>
     <div class="container">
         <div class="footer-content">
@@ -34,7 +35,7 @@
         </div>
 
         <div class="footer-bottom">
-            <p>© 2024-2026 EduHub — Система управления учебным заведением</p>
+            <p>© {% get_current_year %} EduHub — Система управления учебным заведением</p>
             <p>Разработка: Илья Гураль | Статус: <span class="status">в разработке</span></p>
         </div>
     </div>

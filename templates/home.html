@@ -1,9 +1,36 @@
-<!-- templates/home.html -->
 {% extends 'base.html' %}
+{% load core_tags %}
 
 {% block title %}EduHub - Главная страница{% endblock %}
 
 {% block content %}
+    <div class="home-container">
+    <div class="main-content">
+        <!-- Существующий контент главной страницы -->
+        <div class="welcome-section">
+            <h1>Добро пожаловать в EduHub!</h1>
+            <!-- ... остальной контент ... -->
+        </div>
+    </div>
+
+    <div class="sidebar-container">
+        {% show_sidebar current_page='home' %}
+    </div>
+</div>
+
+<style>
+.home-container {
+    display: flex;
+    gap: 2rem;
+}
+.main-content {
+    flex: 3;
+}
+.sidebar-container {
+    flex: 1;
+    min-width: 250px;
+}
+</style>
 <div class="welcome-section">
     <h1>Добро пожаловать в EduHub!</h1>
     <p class="subtitle">Система управления учебным заведением</p>

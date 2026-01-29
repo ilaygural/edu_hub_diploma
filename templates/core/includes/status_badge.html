@@ -1,0 +1,28 @@
+<span class="status-badge status-{{ color }}">
+    🚧 {{ status|upper }}
+</span>
+
+<style>
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+.status-danger {
+    background: #ffeaea;
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+}
+.status-warning {
+    background: #fff4e6;
+    color: #f39c12;
+    border: 1px solid #f39c12;
+}
+.status-success {
+    background: #eafaf1;
+    color: #27ae60;
+    border: 1px solid #27ae60;
+}
+</style>
