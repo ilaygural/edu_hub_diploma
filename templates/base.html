@@ -4,31 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}EduHub - Управление учебным заведением{% endblock %}</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background: #f8f9fa;
-            color: #333;
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        main {
-            flex: 1;
-            padding: 2rem 0;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-    </style>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+    <link rel="stylesheet" href="{% static 'css/footer.css' %}">
+
     {% block extra_css %}{% endblock %}
 </head>
 <body>
