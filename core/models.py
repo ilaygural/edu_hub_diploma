@@ -18,3 +18,7 @@ class Course(models.Model):
         verbose_name = 'Курс'
         verbose_name_plural = 'Курсы'
         ordering = ['-time_create']  # новые курсы будут первыми
+        indexes = [
+            models.Index(fields=['-time_create']),  # Для быстрой сортировки
+            models.Index(fields=['slug']),  # Для поиска по URL
+        ]
