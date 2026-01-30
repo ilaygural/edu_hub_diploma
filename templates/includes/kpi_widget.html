@@ -1,0 +1,54 @@
+
+<div class="kpi-widget">
+    <div class="row">
+        {% for item in indicators %}
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card h-100 shadow-sm border-light">
+                    <div class="card-body text-center">
+                        <!-- Иконка и название -->
+                        <div class="fs-1 mb-2">{{ item.icon }}</div>
+                        <h5 class="card-title">{{ item.name }}</h5>
+
+                        <!-- Значение (с фильтром для чисел) -->
+                        <h2 class="display-6 my-3">
+                            {% if item.value|default:0|floatformat:"0" == item.value|stringformat:"s" %}
+                                {{ item.value }} <!-- Целое число -->
+                            {% else %}
+                                {{ item.value|floatformat:"1" }} <!-- Дробное, 1 знак -->
+                            {% endif %}
+                        </h2>
+
+                        <!-- Изменение (с условием и цветом) -->
+                        <p class="card-text">
+                            {% if item.change.0 == '+' %}
+                                <span class="text-success">▲ {{ item.change }}</span>
+                            {% elif item.change.0 == '-' %}
+                                <span class="text-danger">▼ {{ item.change }}</span>
+                            {% else %}
+                                <span class="text-secondary">→ {{ item.change }}</span>
+                            {% endif %}
+                            <small class="text-muted d-block">с прошлого месяца</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <!-- Сработает, если indicators пуст (тег if/for) -->
+            <div class="col-12">
+                <p class="text-center text-muted">Данных пока нет.</p>
+            </div>
+        {% endfor %}
+        <style>
+            .kpi-widget .card {
+                border-radius: 12px;
+                transition: transform 0.2s;
+            }
+
+            .kpi-widget .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+            }
+        </style>
+    </div>
+
+</div>

@@ -7,6 +7,20 @@ from .models import Course
 # def home(request):
 #     return HttpResponse("Главная страница работает!")
 
+def kpi_dashboard(request):
+    """Представление для страницы с колючевыми показателями"""
+    kpi_data = {
+        'title': 'Ключевые показатели EduHub',
+        'indicators': [
+            {'name': 'Всего курсов', 'value': 12, 'change': '+2', 'icon': '📚'},
+            {'name': 'Активных студентов', 'value': 143, 'change': '+5%', 'icon': '👨‍🎓'},
+            {'name': 'Заполняемость групп', 'value': 87.5, 'change': '+2.3%', 'icon': '📊'},
+            {'name': 'Средняя оценка', 'value': 4.7, 'change': '-0.1', 'icon': '⭐'},
+        ],
+        'updated': '29.01.2026 10:00',
+    }
+    return render(request, 'core/kpi_dashboard.html', context=kpi_data)
+
 def home(request):
     """Главная страница"""
     context = {
