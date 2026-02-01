@@ -65,6 +65,8 @@ def schedule(request):
 
 def about(request):
     return render(request, 'core/about.html', {'title': 'О нас'})
+
+
 # def schedule(request):
 #     data = {
 #         'title': 'Расписание занятий',
