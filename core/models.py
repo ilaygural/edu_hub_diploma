@@ -1,4 +1,6 @@
 from django.db import models
+from django.urls import reverse
+
 
 class Course(models.Model):
     title = models.CharField(max_length=200, verbose_name='Название курса')
@@ -13,6 +15,9 @@ class Course(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse('course_detail', kwargs={'course_slug': self.slug})
 
     class Meta:
         verbose_name = 'Курс'

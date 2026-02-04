@@ -1,38 +1,119 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load core_tags %}
 
-{% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/courses.css' %}">
-{% endblock %}
-
-{% block title %}{{ course.title|capfirst }}{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-    <!-- capfirst для заголовка -->
-    <h1>{{ course.title|capfirst }}</h1>
+<div class="container mt-4">
+    <h1>{{ course.title }}</h1>
+    <p class="text-muted">Код: {{ course.code }} | Обновлен: {{ course.time_update|date:"d.m.Y" }}</p>
+    <hr>
 
-    <div class="course-meta">
-        <p><strong>Код курса:</strong> {{ course.code|upper }}</p>
-        <p><strong>URL (slug):</strong> {{ course.slug }}</p>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">📋 Описание курса</h4>
+                    <p class="card-text">{{ course.description|linebreaks }}</p>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h4 class="card-title">💰 Стоимость и детали</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Цена курса
+                            <span class="badge bg-primary rounded-pill fs-6">
+                                {% format_price course.price %}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Статус
+                            <span class="badge {% if course.is_published %}bg-success{% else %}bg-warning{% endif %} rounded-pill">
+                                {% if course.is_published %}✅ Опубликован{% else %}⏳ Черновик{% endif %}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Дата создания
+                            <span>{{ course.time_create|date:"d.m.Y H:i" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Последнее обновление
+                            <span>{{ course.time_update|date:"d.m.Y H:i" }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">🚀 Действия</h5>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'home' %}" class="btn btn-outline-primary">
+                            ← На главную
+                        </a>
+                        <a href="/admin/core/course/{{ course.id }}/change/"
+                           class="btn btn-outline-secondary"
+                           target="_blank">
+                            ✏️ Редактировать (админка)
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">🔗 Ссылка на курс</h5>
+                    <div class="input-group">
+                        <input type="text"
+                               class="form-control"
+                               value="{{ request.scheme }}://{{ request.get_host }}{{ course.get_absolute_url }}"
+                               readonly
+                               id="course-url">
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                onclick="copyUrl()"
+                                title="Скопировать ссылку">
+                            📋
+                        </button>
+                    </div>
+                    <small class="text-muted">Используйте для курса</small>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <!-- default для пустого описания -->
-    <div class="course-description">
-        <h3>Описание</h3>
-        <p>{{ course.description|default:"Описание курса пока не добавлено."|linebreaks }}</p>
-    </div>
+<script>
+function copyUrl() {
+    const input = document.getElementById('course-url');
+    input.select();
+    document.execCommand('copy');
+    const btn = event.target;
+    btn.textContent = '✅ Скопировано!';
+    setTimeout(() => btn.textContent = '📋', 2000);
+}
+</script>
 
-    <div class="actions">
-        <a href="{% url 'courses' %}" class="btn">← К списку курсов</a>
-        <!-- pluralize для потенциального количества занятий -->
-        <small>Курс содержит {{ 0|default:"0" }} занятий{{ 0|pluralize:"е,я" }}</small>
-
-        <!-- Форматирование даты -->
-        <small class="text-muted">
-            Создан: {{ course.created_at|date:"d E Y" }} <!-- Выведет "29 января 2026" -->
-        </small>
-
-        <!-- Обрезка текста -->
-        <p>{{ course.description|truncatechars:150 }}</p> <!-- Обрежет описание до 150 символов -->
-    </div>
+<style>
+.card {
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    border: 1px solid #e0e0e0;
+}
+.card-title {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+.list-group-item {
+    border: none;
+    padding: 0.75rem 0;
+}
+</style>
 {% endblock %}

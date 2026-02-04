@@ -35,9 +35,17 @@ def courses_list(request):
     return render(request, 'core/courses.html', {'courses': courses})
 
 
-def course_detail(request, pk):
-    course = get_object_or_404(Course, id=pk)
-    return render(request, 'core/course_detail.html', {'course': course})
+def course_detail(request, course_slug):
+    """
+    Детальная страница курса по его слагу
+    Доступны только опубликованные курсы (is_published=True)
+    """
+    course = get_object_or_404(Course, slug=course_slug, is_published=True)
+    context = {
+        'title': f'Курс: {course.title}',
+        'course': course,
+    }
+    return render(request, 'core/course_detail.html', context)
 
 def course_detail_by_slug(request, slug):
     course = get_object_or_404(Course, slug=slug)
