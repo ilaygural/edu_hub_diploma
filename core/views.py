@@ -31,8 +31,13 @@ def home(request):
 
 
 def courses_list(request):
-    courses = Course.objects.all()
-    return render(request, 'core/courses.html', {'courses': courses})
+    """Страница со списками всех опубликованных курсов"""
+    course = Course.published.all()
+    context = {
+        'title': 'Все курсы',
+        'course': course,
+    }
+    return render(request, 'core/courses.html', context)
 
 
 def course_detail(request, course_slug):
@@ -40,7 +45,7 @@ def course_detail(request, course_slug):
     Детальная страница курса по его слагу
     Доступны только опубликованные курсы (is_published=True)
     """
-    course = get_object_or_404(Course, slug=course_slug, is_published=True)
+    course = get_object_or_404(Course.published, slug=course_slug)
     context = {
         'title': f'Курс: {course.title}',
         'course': course,

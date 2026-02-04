@@ -2,7 +2,16 @@ from django.db import models
 from django.urls import reverse
 
 
+class PublishedManager(models.Manager):
+    """Менеджер для получения только опубликованных курсов"""
+    def get_queryset(self):
+        return super().get_queryset().filter(is_published=Course.Status.PUBLISHED)
+
 class Course(models.Model):
+    class Status(models.IntegerChoices):
+        DRAFT = 0, 'Черновик'
+        PUBLISHED = 1, 'Опубликовано'
+
     title = models.CharField(max_length=200, verbose_name='Название курса')
     description = models.TextField(blank=True, verbose_name='Описание')  # blank=True как в примере
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена', default=0)
@@ -11,7 +20,14 @@ class Course(models.Model):
     # НОВЫЕ ПОЛЯ по аналогии с учебным проектом:
     time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
     time_update = models.DateTimeField(auto_now=True, verbose_name='Время изменения')
-    is_published = models.BooleanField(default=True, verbose_name='Опубликовано')
+
+    is_published = models.BooleanField(
+        choices=Status.choices,
+        default=Status.PUBLISHED,
+        verbose_name='Статус')
+
+    objects = models.Manager()  # Менеджер по умолчанию
+    published = PublishedManager()  # Наш кастомный менеджер
 
     def __str__(self):
         return self.title
