@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
+    'accounts.apps.AccountsConfig',
     'core.apps.CoreConfig',
     # 'schedule.apps.ScheduleConfig',
     "debug_toolbar",
