@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'accounts.apps.AccountsConfig',
     'core.apps.CoreConfig',
-    # 'schedule.apps.ScheduleConfig',
+    'schedule.apps.ScheduleConfig',
     "debug_toolbar",
 ]
 
