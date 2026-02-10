@@ -69,7 +69,6 @@ def courses_list(request):
         'courses': courses,
         'search_query': search_query,
     })
-# core/views.py - добавить временные views
 def teachers(request):
     return render(request, 'core/teachers.html', {'title': 'Преподаватели'})
 
@@ -78,30 +77,3 @@ def schedule(request):
 
 def about(request):
     return render(request, 'core/about.html', {'title': 'О нас'})
-
-
-# def schedule(request):
-#     data = {
-#         'title': 'Расписание занятий',
-#         'courses': [
-#             {
-#                 'title': 'Математика',
-#                 'teacher': 'Иванов И.И.',
-#                 'is_active': True,
-#                 'schedule': 'Пн, Ср 10:00-11:30'
-#             },
-#             {
-#                 'title': 'Программирование',
-#                 'teacher': 'Петрова А.С.',
-#                 'is_active': True,
-#                 'schedule': 'Вт, Чт 14:00-15:30'
-#             },
-#             {
-#                 'title': 'Физика',
-#                 'teacher': 'Сидоров В.П.',
-#                 'is_active': False,  # неактивный курс
-#                 'schedule': 'Пт 09:00-10:30'
-#             }
-#         ]
-#     }
-#     return render(request, 'schedule/index.html', data)

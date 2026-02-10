@@ -4,8 +4,26 @@ from django.urls import reverse
 
 class PublishedManager(models.Manager):
     """Менеджер для получения только опубликованных курсов"""
+
     def get_queryset(self):
         return super().get_queryset().filter(is_published=Course.Status.PUBLISHED)
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name="Название тега")
+    slug = models.SlugField(max_length=100, unique=True, verbose_name='URL')
+
+    class Meta:
+        verbose_name = "Тег"
+        verbose_name_plural = "Теги"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('course_by_tag', kwargs={'tag_slug': self.slug})
+
 
 class Course(models.Model):
     class Status(models.IntegerChoices):
@@ -25,7 +43,11 @@ class Course(models.Model):
         choices=Status.choices,
         default=Status.PUBLISHED,
         verbose_name='Статус')
-
+    tags = models.ManyToManyField(
+        Tag,
+        related_name='courses',
+        verbose_name='Теги'
+    )
     objects = models.Manager()  # Менеджер по умолчанию
     published = PublishedManager()  # Наш кастомный менеджер
 
