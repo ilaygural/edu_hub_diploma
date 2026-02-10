@@ -5,11 +5,22 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
+
 <div class="container mt-4">
-    <h1>{{ title }}</h1>
-    <p class="text-muted">Всего курсов: {{ courses.count }}</p>
+    <!-- Заголовок с учётом типа страницы -->
+    {% if page_type == 'tag' %}
+        <h1>Курсы с тегом: <span class="badge bg-primary">{{ tag.name }}</span></h1>
+        <p class="text-muted">Всего курсов: {{ courses.count }}</p>
+        <a href="{% url 'courses_list' %}" class="btn btn-outline-secondary btn-sm">
+            ← Все курсы
+        </a>
+    {% else %}
+        <h1>{{ title }}</h1>
+        <p class="text-muted">Всего курсов: {{ courses.count }}</p>
+    {% endif %}
+
     <hr>
-    
+
     <div class="row">
         {% for course in courses %}
         <div class="col-md-6 mb-4">
@@ -17,7 +28,7 @@
                 <div class="card-body">
                     <h5 class="card-title">{{ course.title }}</h5>
                     <p class="card-text">{{ course.description|truncatewords:30 }}</p>
-                    
+
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="badge bg-primary fs-6">
                             {% format_price course.price %}

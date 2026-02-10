@@ -11,5 +11,6 @@ urlpatterns = [
     path('about/', views.about, name='about'),
     path('kpi/', views.kpi_dashboard, name='kpi_dashboard'),
     path('course/<slug:course_slug>/', views.course_detail, name='course_detail'),
-    path('course/', views.courses_list, name='course_list'),
+    path('course/', views.courses_list, name='courses_list'),
+    path('tag/<slug:tag_slug>/', views.courses_by_tag, name='courses_by_tag'),
 ]

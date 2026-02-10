@@ -18,7 +18,19 @@
                     <p class="card-text">{{ course.description|linebreaks }}</p>
                 </div>
             </div>
-
+<div class="mt-4">
+    <h5>🏷️ Теги курса</h5>
+    {% if course.tags.all %}
+        {% for tag in course.tags.all %}
+            <a href="{% url 'courses_by_tag' tag.slug %}"
+               class="btn btn-sm btn-outline-secondary me-2 mb-2">
+                {{ tag.name }}
+            </a>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">Теги не указаны</p>
+    {% endif %}
+</div>
             <div class="card mt-4">
                 <div class="card-body">
                     <h4 class="card-title">💰 Стоимость и детали</h4>
