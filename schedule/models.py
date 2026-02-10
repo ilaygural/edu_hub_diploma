@@ -30,6 +30,12 @@ class Group(models.Model):
     def get_active_pupils(self):
         return self.group_enrollments.filter(date_to__isnull=True).values('pupil')
 
+    class Meta:
+        verbose_name = "Учебная группа"
+        verbose_name_plural = "Учебные группы"
+        ordering = ['-start_date']
+
+
 class Enrollment(models.Model):
     """Зачисление ученика в группу"""
     pupil = models.ForeignKey(
@@ -59,3 +65,88 @@ class Enrollment(models.Model):
     @property
     def is_active(self):
         return self.date_to is None
+
+    class Meta:
+        verbose_name = "Зачисление"
+        verbose_name_plural = "Зачисления"
+        ordering = ['-date_from']
+
+
+class Attendance(models.Model):
+    """
+    Посещаемость
+    """
+    pupil = models.ForeignKey(
+        Pupil,
+        on_delete=models.CASCADE,
+        related_name='attendances',
+        verbose_name='Ученик'
+    )
+    lesson_date = models.DateField(verbose_name='Дата занятий')
+
+    class Status(models.IntegerChoices):
+        PRESENT = 1, 'Присутствовал'
+        ABSENT = 0, 'Отсутствовал'
+        LATE = 2, 'Опоздал'
+
+    status = models.IntegerField(
+        choices=Status.choices,
+        default=Status.PRESENT,
+        verbose_name='Статус'
+    )
+    notes = models.TextField(
+        blank=True,
+        verbose_name='Примечания'
+    )
+
+    def __str__(self):
+        return f"{self.pupil} - {self.lesson_date}: {self.get_status_display()}"
+
+    @property
+    def is_present(self):
+        return True if self.status == self.Status.PRESENT or self.status == self.Status.LATE else False
+
+    class Meta:
+        verbose_name = "Посещаемость"
+        verbose_name_plural = "Посещаемости"
+        ordering = ['-lesson_date']
+
+
+class Schedule(models.Model):
+    """
+    Конкретное занятие группы в определенное время
+    """
+    group = models.ForeignKey(
+        Group,
+        on_delete=models.CASCADE,
+        related_name='lessons',
+        verbose_name='Группа'
+    )
+
+    lesson_date = models.DateField(verbose_name='Дата занятия')
+    start_time = models.TimeField(verbose_name='Время начала')
+    end_time = models.TimeField(verbose_name='Время окончания')
+
+    topic = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name='Тема занятия'
+    )
+
+    def __str__(self):
+        return f'{self.group} - {self.lesson_date}'
+
+    @property
+    def duration(self):
+        # Преобразуем время в минуты от начала дня
+        start_minutes = self.start_time.hour * 60 + self.start_time.minute
+        end_minutes = self.end_time.hour * 60 + self.end_time.minute
+        return end_minutes - start_minutes  # Длительность в минутах
+
+    class Meta:
+        verbose_name = 'Расписание'
+        verbose_name_plural = 'Расписания'
+        ordering = ['-lesson_date', 'start_time']  # новые курсы будут первыми
+        indexes = [
+            models.Index(fields=['-lesson_date']),  # Для быстрой сортировки
+        ]
