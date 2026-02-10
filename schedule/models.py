@@ -1,5 +1,7 @@
-from django.db import models
+from datetime import date
 
+from django.db import models
+from django.utils import timezone
 from accounts.models import Pupil
 
 
@@ -150,3 +152,48 @@ class Schedule(models.Model):
         indexes = [
             models.Index(fields=['-lesson_date']),  # Для быстрой сортировки
         ]
+
+class Payment(models.Model):
+    pupil = models.ForeignKey(
+        Pupil,
+        on_delete=models.PROTECT,
+        related_name='payments',
+        verbose_name='Ученик'
+    )
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Сумма"
+    )
+    payment_date = models.DateField(
+        verbose_name='Дата оплаты',
+        default=date.today
+    )
+    class Purpose(models.IntegerChoices):
+        TUITION = 0, "Обучение"
+        MATERIAL = 1, "Материалы"
+        OTHER = 2, "Прочее"
+
+    purpose = models.IntegerField(
+        choices=Purpose.choices,
+        default=Purpose.TUITION,
+        verbose_name='Назначение'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    notes = models.TextField(
+        blank=True,
+        verbose_name='Примечания'
+    )
+    def __str__(self):
+        return f'{self.pupil} - {self.amount} ₽ - {self.get_purpose_display()}'
+
+    @property
+    def is_recent(self):
+        return (timezone.now().date() - self.payment_date).days <= 30
+
+    class Meta:
+        verbose_name = "Платеж"
+        verbose_name_plural = "Платежи"
+        ordering = ['-payment_date']
