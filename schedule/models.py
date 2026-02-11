@@ -135,6 +135,15 @@ class Schedule(models.Model):
         verbose_name='Тема занятия'
     )
 
+    teacher = models.ForeignKey(
+        'accounts.Teacher',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='schedule_lessons',
+        verbose_name='Преподаватель'
+    )
+
     def __str__(self):
         return f'{self.group} - {self.lesson_date}'
 
