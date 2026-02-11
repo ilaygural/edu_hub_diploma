@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.fields import CharField
 from django.urls import reverse
 
 
@@ -29,6 +28,7 @@ class Pupil(models.Model):
         verbose_name='Телефон'
     )
     address = models.CharField(
+        max_length=255,
         blank=True,
         verbose_name='Адрес'
     )
