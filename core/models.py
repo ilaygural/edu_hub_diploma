@@ -51,6 +51,13 @@ class Course(models.Model):
     objects = models.Manager()  # Менеджер по умолчанию
     published = PublishedManager()  # Наш кастомный менеджер
 
+    teachers = models.ManyToManyField(
+        'accounts.Teacher',
+        related_name='courses',
+        blank=True,
+        verbose_name='Преподаватели'
+    )
+
     def __str__(self):
         return self.title
 
