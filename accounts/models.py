@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.fields import CharField
 from django.urls import reverse
 
 
@@ -72,3 +73,65 @@ class Pupil(models.Model):
     @property
     def email(self):
         return self.user.email
+
+
+class Teacher(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='teacher_profile',
+        verbose_name="Пользователь"
+    )
+    qualification = models.CharField(max_length=200, blank=True, verbose_name="Квалификация")
+    specialization = models.CharField(max_length=200, blank=True, verbose_name="Специализация")
+    experience_years = models.IntegerField(default=0, verbose_name="Стаж(лет)")
+    phone = models.CharField(max_length=20, blank=True, verbose_name="Телефон")
+    office = models.CharField(max_length=50, blank=True, verbose_name="Кабинет")
+    is_active = models.BooleanField(default=True, verbose_name='Активный')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Преподаватель"
+        verbose_name_plural = "Преподаватели"
+        ordering = ['user__last_name']
+
+    def __str__(self):
+        return f'{self.user.get_full_name()} ({self.user.username})'
+
+    @property
+    def full_name(self):
+        return self.user.get_full_name()
+
+
+class Parent(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='parent_profile',
+        verbose_name='Пользователь'
+    )
+
+    children = models.ManyToManyField(
+        Pupil,
+        blank=True,
+        verbose_name="Дети"
+    )
+
+    phone = models.CharField(max_length=20, blank=True, verbose_name='Телефон')
+    work_place = models.CharField(max_length=200, blank=True, verbose_name='Место работы')
+    additional_contacts = models.TextField(blank=True, verbose_name="Дополнительные контакты")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Родитель'
+        verbose_name_plural = 'Родители'
+        ordering = ['user__last_name']
+
+    def __str__(self):
+        return f'{self.user.get_full_name()} ({self.user.username})'
+
+    @property
+    def full_name(self):
+        return self.user.get_full_name()
