@@ -1,6 +1,12 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Q
 from django.urls import reverse
+
+
+class PupulManager(models.Manager):
+    def active_or_enrolled_after(self, date):
+        return self.filter(Q(status=Pupil.Status.ACTIVE)|Q(enrolled_date__gte=date))
 
 
 # Create your models here.
@@ -32,6 +38,8 @@ class Pupil(models.Model):
         blank=True,
         verbose_name='Адрес'
     )
+
+    objects = PupulManager()
 
     # Статус ученика
     class Status(models.IntegerChoices):

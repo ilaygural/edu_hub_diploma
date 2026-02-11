@@ -1,6 +1,7 @@
-from datetime import date
+from datetime import date, timedelta
 
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from accounts.models import Pupil
 
@@ -30,7 +31,9 @@ class Group(models.Model):
         return self.name
 
     def get_active_pupils(self):
-        return self.group_enrollments.filter(date_to__isnull=True).values('pupil')
+        seven_days_ago = timezone.now().date() - timedelta(days=7)
+        return self.group_enrollments.filter(Q(date_to__isnull=True) | Q(date_to__gte=seven_days_ago)).values(
+            'pupil')
 
     class Meta:
         verbose_name = "Учебная группа"
@@ -162,6 +165,7 @@ class Schedule(models.Model):
             models.Index(fields=['-lesson_date']),  # Для быстрой сортировки
         ]
 
+
 class Payment(models.Model):
     pupil = models.ForeignKey(
         Pupil,
@@ -178,6 +182,7 @@ class Payment(models.Model):
         verbose_name='Дата оплаты',
         default=date.today
     )
+
     class Purpose(models.IntegerChoices):
         TUITION = 0, "Обучение"
         MATERIAL = 1, "Материалы"
@@ -195,6 +200,7 @@ class Payment(models.Model):
         blank=True,
         verbose_name='Примечания'
     )
+
     def __str__(self):
         return f'{self.pupil} - {self.amount} ₽ - {self.get_purpose_display()}'
 
