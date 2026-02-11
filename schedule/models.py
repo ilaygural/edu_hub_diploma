@@ -35,6 +35,12 @@ class Group(models.Model):
         return self.group_enrollments.filter(Q(date_to__isnull=True) | Q(date_to__gte=seven_days_ago)).values(
             'pupil')
 
+    def has_active_pupils(self):
+        return self.group_enrollments.filter(date_to__isnull=True).exists()
+
+    def active_pupils_count(self):
+        return self.group_enrollments.filter(date_to__isnull=True).count()
+
     class Meta:
         verbose_name = "Учебная группа"
         verbose_name_plural = "Учебные группы"
