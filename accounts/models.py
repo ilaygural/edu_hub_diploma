@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.urls import reverse
 
 
-class PupulManager(models.Manager):
+class PupilManager(models.Manager):
     def active_or_enrolled_after(self, date):
         return self.filter(Q(status=Pupil.Status.ACTIVE)|Q(enrolled_date__gte=date))
 
@@ -39,7 +39,7 @@ class Pupil(models.Model):
         verbose_name='Адрес'
     )
 
-    objects = PupulManager()
+    objects = PupilManager()
 
     # Статус ученика
     class Status(models.IntegerChoices):
