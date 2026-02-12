@@ -69,7 +69,7 @@ def courses_list(request):
     if search_query:
         courses = Course.objects.filter(title__icontains=search_query)
     else:
-        courses = Course.objects.all()
+        courses = Course.objects.only('id','title')
 
     return render(request, 'core/courses.html', {
         'courses': courses,
