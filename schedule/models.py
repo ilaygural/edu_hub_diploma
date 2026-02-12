@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, F
 from django.utils import timezone
 from accounts.models import Pupil
 
@@ -209,6 +209,12 @@ class Payment(models.Model):
 
     def __str__(self):
         return f'{self.pupil} - {self.amount} ₽ - {self.get_purpose_display()}'
+
+    #  Метод Увеличение суммы платежа
+    def increase_amount(self, value):
+        self.amount = F('amount') + value
+        self.save()
+        self.refresh_from_db()
 
     @property
     def is_recent(self):
