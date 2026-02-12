@@ -1,3 +1,4 @@
+from django.db.models import Value, BooleanField
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Course, Tag
@@ -33,7 +34,10 @@ def home(request):
 
 def courses_list(request):
     """Страница со списками всех опубликованных курсов"""
-    course = Course.published.all()
+    # course = Course.published.all()
+    course = Course.objects.annotate(
+        is_popular=Value(True, output_field=BooleanField())
+    ) # Пример использования annotate + Value
     context = {
         'title': 'Все курсы',
         'course': course,
