@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.db.models import Value, BooleanField
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -5,8 +6,6 @@ from .models import Course, Tag
 
 
 # Create your views here.
-# def home(request):
-#     return HttpResponse("Главная страница работает!")
 
 def kpi_dashboard(request):
     """Представление для страницы с колючевыми показателями"""
@@ -25,24 +24,27 @@ def kpi_dashboard(request):
 
 def home(request):
     """Главная страница"""
+    count_courses = cache.get_or_set('courses_count', Course.objects.count, 60)
     context = {
         'title': 'EduHub - Главная',
-        'courses_count': Course.objects.count(),
+        'courses_count': count_courses,
     }
     return render(request, 'home.html', context)
 
 
 def courses_list(request):
-    """Страница со списками всех опубликованных курсов"""
-    # course = Course.published.all()
-    course = Course.objects.annotate(
-        is_popular=Value(True, output_field=BooleanField())
-    ) # Пример использования annotate + Value
-    context = {
-        'title': 'Все курсы',
-        'course': course,
-    }
-    return render(request, 'core/courses.html', context)
+    """Страница со списком всех курсов с поиском"""
+    search_query = request.GET.get('search', '')
+
+    qs = Course.objects.all().prefetch_related('tags', 'teachers')
+
+    if search_query:
+        qs = qs.filter(title__icontains=search_query)
+
+    return render(request, 'core/courses.html', {
+        'courses': qs,
+        'search_query': search_query,
+    })
 
 
 def course_detail(request, course_slug):
@@ -63,26 +65,16 @@ def course_detail_by_slug(request, slug):
     return render(request, 'core/course_detail.html', {'course': course})
 
 
-def courses_list(request):
-    search_query = request.GET.get('search', '')
-
-    if search_query:
-        courses = Course.objects.filter(title__icontains=search_query)
-    else:
-        courses = Course.objects.only('id','title')
-
-    return render(request, 'core/courses.html', {
-        'courses': courses,
-        'search_query': search_query,
-    })
-
-
 def courses_by_tag(request, tag_slug):
     """
     Отображает все курсы с определенным тегом
     """
     tag = get_object_or_404(Tag, slug=tag_slug)
-    courses = Course.objects.filter(tags=tag)  # Используем кастомный менеджер!
+    courses = (
+        Course.objects
+        .filter(tags=tag)
+        .prefetch_related('tags', 'teachers')
+    )
     context = {
         'title': f'Тег: {tag.name}',
         'tag': tag,

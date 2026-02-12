@@ -1,4 +1,5 @@
 from django import template
+from django.core.cache import cache
 from django.utils import timezone
 from core.models import Course
 
@@ -10,7 +11,11 @@ register = template.Library()
 @register.simple_tag
 def get_courses_count():
     """Возвращает общее количество курсов"""
-    return Course.objects.count()
+    count = cache.get('courses_count')
+    if count is None:
+        count = Course.objects.count()
+        cache.set('courses_count', count, 60)  # кэш на 60 секунд
+    return count
 
 
 @register.simple_tag
@@ -39,12 +44,18 @@ def get_project_status():
 
 # ==================== INCLUSION TAGS ====================
 
-@register.inclusion_tag('core/includes/sidebar.html')
-def show_sidebar(current_page='home'):
-    """Сайдбар с популярными курсами"""
+@register.inclusion_tag('core/includes/sidebar.html', takes_context=True)
+def show_sidebar(context, current_page=None):
+    # Пытаемся получить из кэша
+    popular_courses = cache.get('popular_courses')
+    if popular_courses is None:
+        popular_courses = Course.objects.order_by('-time_create')[:3]
+        cache.set('popular_courses', popular_courses, 300)  # 5 минут
+
     return {
-        'popular_courses': Course.objects.all()[:3],
+        'popular_courses': popular_courses,
         'current_page': current_page,
+        'user': context['request'].user,
     }
 
 
