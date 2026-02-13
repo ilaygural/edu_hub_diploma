@@ -1,16 +1,36 @@
 from django.contrib import admin
 from .models import Course, Tag
 
+@admin.action(description="Опубликовать выбранные курсы")
+def make_published(modeladmin, request, queryset):
+    updated = queryset.update(is_published=Course.Status.PUBLISHED)
+    modeladmin.message_user(request, f"Опубликовано {updated} курсов")
+
+@admin.action(description="Снять с публикации")
+def make_draft(modeladmin, request, queryset):
+    updated = queryset.update(is_published=Course.Status.DRAFT)
+    modeladmin.message_user(request, f"{updated} курсов сняты с публикации")
+
+
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug':("title",)}
-    list_display = ['title', 'code', 'slug', 'is_published', 'time_create']
+    list_display = ['title', 'code', 'slug', 'is_published', 'short_desc', 'teacher_list']
     list_display_links = ('title', 'code')
     list_editable = ('is_published',)
     list_filter = ['is_published']
     search_fields = ['title', 'code']
     ordering = ['-time_create']
     list_per_page = 20
+    actions = [make_published, make_draft]
+
+    @admin.display(description='Краткое описание')
+    def short_desc(self, obj):
+        return obj.description[:50] + '...' if obj.description else '-'
+
+    @admin.display(description='Преподаватели')
+    def teacher_list(self, obj):
+        return ', '.join([t.full_name for t in obj.teachers.all()[:3]])
 
 # admin.site.register(Tag)
 @admin.register(Tag)
