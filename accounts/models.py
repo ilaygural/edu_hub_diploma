@@ -83,6 +83,17 @@ class Pupil(models.Model):
         return self.user.email
 
 
+    #  геттеры для отображения правильных имен в админке
+    def get_full_name(self):
+        return self.user.get_full_name()
+
+    get_full_name.short_description = 'ФИО'
+
+    def get_email(self):
+        return self.user.email
+
+    get_email.short_description = 'Email'
+
 class Teacher(models.Model):
     user = models.OneToOneField(
         User,
@@ -110,6 +121,11 @@ class Teacher(models.Model):
     @property
     def full_name(self):
         return self.user.get_full_name()
+
+    def get_full_name(self):
+        return self.user.get_full_name()
+
+    get_full_name.short_description = 'ФИО'
 
 
 class Parent(models.Model):
@@ -143,3 +159,8 @@ class Parent(models.Model):
     @property
     def full_name(self):
         return self.user.get_full_name()
+
+    def get_full_name(self):
+        return self.user.get_full_name()
+
+    get_full_name.short_description = 'ФИО'
