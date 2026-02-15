@@ -1,13 +1,37 @@
 from django.contrib import admin
+from django.db.models import Q, Count
+
 from .models import Group, Enrollment, Attendance, Schedule, Payment
 
 
 # Register your models here.
+#  Кастомный фильтр активных учеников в группе
+class HasActivePupilsFilter(admin.SimpleListFilter):
+    title = "Активные ученики"
+    parameter_name = "has_active"
+
+    def lookups(self, request, model_admin):
+        return [
+            ('yes', 'Есть активные'),
+            ('no', 'Нет активных')
+        ]
+
+    def queryset(self, request, queryset):
+        queryset = queryset.annotate(
+            active_count=Count('group_enrollments', filter=Q(group_enrollments__date_to__isnull=True))
+        )
+        if self.value() == 'yes':
+            return queryset.filter(active_count__gt=0)
+        elif self.value() == 'no':
+            return queryset.filter(active_count=0)
+        return queryset
+
+
 # admin.site.register(Group)
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
     list_display = ['name', 'status', 'start_date', 'end_date']
-    list_filter = ['status']
+    list_filter = [HasActivePupilsFilter, 'status']
     search_fields = ['name']
 
 

@@ -4,11 +4,31 @@ from datetime import date
 
 
 # Register your models here.
+#  Кастомный фильтр наличие родителей
+class HasParentFilter(admin.SimpleListFilter):
+    title = "Наличие родителей"
+    parameter_name = "has_parent"
+
+    def lookups(self, request, model_admin):
+        return [
+            ('yes', 'Есть родители'),
+            ('no', 'Нет родителей')
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.filter(parent__isnull=False)
+        if self.value() == 'no':
+            return queryset.filter(parent__isnull=True)
+        else:
+            return queryset
+
+
 # admin.site.register(Pupil)
 @admin.register(Pupil)
 class PupilAdmin(admin.ModelAdmin):
     list_display = ['get_full_name', 'get_email', 'status', 'enrolled_date', 'age']
-    list_filter = ['status']
+    list_filter = [HasParentFilter, 'status']
     search_fields = ['user__first_name', 'user__last_name', 'user__email']
 
     @admin.display(description='Возраст')

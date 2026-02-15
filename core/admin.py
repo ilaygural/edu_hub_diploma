@@ -11,6 +11,22 @@ def make_draft(modeladmin, request, queryset):
     updated = queryset.update(is_published=Course.Status.DRAFT)
     modeladmin.message_user(request, f"{updated} курсов сняты с публикации")
 
+#  Кастомный фильтр наличия преподавателя
+class HasTeacherFilter(admin.SimpleListFilter):
+    title = "Наличие преподавателя"
+    parameter_name = "has_teacher"
+    def lookups(self, request, model_admin):
+        return [("yes", 'Есть преподаватели'),
+                ("no", "Нет преподавателей")
+        ]
+    def queryset(self, request, queryset):
+        if self.value() == "yes":
+            return queryset.filter(teachers__isnull=False).distinct()
+        elif self.value() == "no":
+            return queryset.filter(teachers__isnull=True).distinct()
+        else:
+            return queryset
+
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
@@ -18,7 +34,7 @@ class CourseAdmin(admin.ModelAdmin):
     list_display = ['title', 'code', 'slug', 'is_published', 'short_desc', 'teacher_list']
     list_display_links = ('title', 'code')
     list_editable = ('is_published',)
-    list_filter = ['is_published']
+    list_filter = [HasTeacherFilter, 'is_published']
     search_fields = ['title', 'code']
     ordering = ['-time_create']
     list_per_page = 20
