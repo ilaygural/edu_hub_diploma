@@ -27,6 +27,8 @@ class HasParentFilter(admin.SimpleListFilter):
 # admin.site.register(Pupil)
 @admin.register(Pupil)
 class PupilAdmin(admin.ModelAdmin):
+    fields = ['user', 'birth_date', 'phone', 'address', 'status', 'enrolled_date']
+    readonly_fields = ['enrolled_date']
     list_display = ['get_full_name', 'get_email', 'status', 'enrolled_date', 'age']
     list_filter = [HasParentFilter, 'status']
     search_fields = ['user__first_name', 'user__last_name', 'user__email']

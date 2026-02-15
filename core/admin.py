@@ -30,6 +30,8 @@ class HasTeacherFilter(admin.SimpleListFilter):
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
+    fields = ['title', 'slug', 'code', 'description', 'price', 'is_published', 'tags', 'teachers']
+    readonly_fields = ['time_create', 'time_update']
     prepopulated_fields = {'slug':("title",)}
     list_display = ['title', 'code', 'slug', 'is_published', 'short_desc', 'teacher_list']
     list_display_links = ('title', 'code')
@@ -39,6 +41,7 @@ class CourseAdmin(admin.ModelAdmin):
     ordering = ['-time_create']
     list_per_page = 20
     actions = [make_published, make_draft]
+    # filter_vertical = ['tags']
 
     @admin.display(description='Краткое описание')
     def short_desc(self, obj):
