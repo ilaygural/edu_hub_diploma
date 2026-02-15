@@ -30,3 +30,7 @@ urlpatterns = [
 
 handler404 = page_not_found  # добавление функции своего ответа
 handler500 = server_error
+
+#  Название панели администрирования
+admin.site.site_header = "Панель администрирования"
+admin.site.index_title = "Учебный Хаб"

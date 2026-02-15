@@ -1,0 +1,28 @@
+/* Цвет шапки */
+#header, .module caption {
+    background: #2c3e50;
+}
+
+/* Цвет хлебных крошек */
+div.breadcrumbs {
+    background: #34495e;
+}
+
+/* Кнопки */
+.button, input[type=submit], input[type=button] {
+    background: #3498db;
+}
+
+.button:hover, input[type=submit]:hover, input[type=button]:hover {
+    background: #2980b9;
+}
+
+/* Ссылки */
+#changelist a, .dashboard #content a {
+    color: #3498db;
+}
+
+/* Заголовки модулей */
+.module h2, .module caption, .inline-group h2 {
+    background: #34495e;
+}
