@@ -1,13 +1,27 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1> Задать вопрос по курсу!</h1>
-    <p>Курс <strong>{{ course.title }}</strong></p>
+    <h1>Задать вопрос по курсу</h1>
+    <p>Курс: <strong>{{ course.title }}</strong></p>
 
     <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
+        {% csrf_token %}
+
+        {% for f in form %}
+            <p>
+                <label for="{{ f.id_for_label }}">{{ f.label }}</label>
+                {{ f }}
+                {% if f.help_text %}
+                    <small class="help-text">{{ f.help_text }}</small>
+                {% endif %}
+                {% if f.errors %}
+                    <span class="error">{{ f.errors }}</span>
+                {% endif %}
+            </p>
+        {% endfor %}
+
         <button type="submit">Отправить вопрос</button>
     </form>
+
     <a href="/course/{{ course.slug }}/">← Вернуться к курсу</a>
 {% endblock %}

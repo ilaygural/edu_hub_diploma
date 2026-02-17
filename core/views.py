@@ -107,7 +107,7 @@ def ask_course_question(request, course_id):
                 fail_silently=False,
             )
             messages.success(request, 'Ваш вопрос отправлен. Мы ответим вам на email.')
-            print(f"SLUG: '{course.slug}'")
+            # print(f"SLUG: '{course.slug}'")
             return redirect('course_detail', course_slug=course.slug)
     else:
         form = CourseQuestionForm()
