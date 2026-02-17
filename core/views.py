@@ -111,8 +111,6 @@ def ask_course_question(request, course_id):
             return redirect('course_detail', course_slug=course.slug)
     else:
         form = CourseQuestionForm()
-    print("Рендерю форму, course:", course)
-    print("course.title:", course.title if course else None)
     return render(request, 'core/ask_question.html', {
         'form': form,
         'course': course,
