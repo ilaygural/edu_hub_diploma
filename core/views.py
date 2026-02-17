@@ -1,7 +1,10 @@
 from django.core.cache import cache
+from django.core.mail import send_mail
 from django.db.models import Value, BooleanField
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .form import CourseQuestionForm
 from .models import Course, Tag
 
 
@@ -83,6 +86,38 @@ def courses_by_tag(request, tag_slug):
     }
     return render(request, 'core/courses_list.html', context)
 
+def ask_course_question(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    if request.method == 'POST':
+        form = CourseQuestionForm(request.POST)
+        if form.is_valid():
+            # Данные из формы
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            question = form.cleaned_data['question']
+
+            # отправка письма (пока консоль)
+            subject = f"Вопрос по курсу: {course.title}"
+            message = f'От {name} ({email}\nВопрос: {question})'
+            send_mail(
+                subject,
+                message,
+                email, # от кого
+                ['admin@edu-hub.ru'],  # кому (админ)
+                fail_silently=False,
+            )
+            messages.success(request, 'Ваш вопрос отправлен. Мы ответим вам на email.')
+            print(f"SLUG: '{course.slug}'")
+            return redirect('course_detail', course_slug=course.slug)
+    else:
+        form = CourseQuestionForm()
+    print("Рендерю форму, course:", course)
+    print("course.title:", course.title if course else None)
+    return render(request, 'core/ask_question.html', {
+        'form': form,
+        'course': course,
+        'title': f"Вопрос по курсе: {course.title}",
+    })
 
 def teachers(request):
     return render(request, 'core/teachers.html', {'title': 'Преподаватели'})
