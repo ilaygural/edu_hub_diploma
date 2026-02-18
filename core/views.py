@@ -4,7 +4,7 @@ from django.db.models import Value, BooleanField
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .form import CourseQuestionForm
+from .form import CourseQuestionForm, ReviewForm
 from .models import Course, Tag
 
 
@@ -86,6 +86,7 @@ def courses_by_tag(request, tag_slug):
     }
     return render(request, 'core/courses_list.html', context)
 
+
 def ask_course_question(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     if request.method == 'POST':
@@ -102,7 +103,7 @@ def ask_course_question(request, course_id):
             send_mail(
                 subject,
                 message,
-                email, # от кого
+                email,  # от кого
                 ['admin@edu-hub.ru'],  # кому (админ)
                 fail_silently=False,
             )
@@ -116,6 +117,36 @@ def ask_course_question(request, course_id):
         'course': course,
         'title': f"Вопрос по курсе: {course.title}",
     })
+
+
+def add_review(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    if request.method == 'POST':
+        form = ReviewForm(request.POST, user=request.user)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.course = course
+            if request.user.is_authenticated:
+                review.reviewed_by = request.user
+
+                if not form.cleaned_data['name']:
+                    review.name = request.user.get_full_name() or request.user.username
+
+                if not form.cleaned_data['email']:
+                    review.email = request.user.email
+        review.save()
+        messages.success(request, "Спасибо! Отзыв отправлен на модерацию")
+
+        return redirect('course_detail', course_slug=course.slug)
+    else:
+        form = ReviewForm(user=request.user)
+    print("Рендерю шаблон, slug:", course.slug)
+    return render(request, 'core/add_review.html', {
+        'form': form,
+        'course': course,
+        'title': f"Отзыв на курс: {course.title}",
+    })
+
 
 def teachers(request):
     return render(request, 'core/teachers.html', {'title': 'Преподаватели'})

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Course, Tag
+from .models import Course, Tag, CourseReview
+
 
 @admin.action(description="Опубликовать выбранные курсы")
 def make_published(modeladmin, request, queryset):
@@ -56,3 +57,14 @@ class CourseAdmin(admin.ModelAdmin):
 class TagAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug':("name",)}
     list_display = ['name', 'slug']
+
+@admin.register(CourseReview)
+class CourseReviewAdmin(admin.ModelAdmin):
+    list_display = ['name', 'course', 'rating', 'is_published', 'created_at']
+    list_filter = ['is_published', 'rating']
+    search_fields = ['name', 'email', 'text']
+    actions = ['make_published']
+
+    @admin.action(description='Опубликовать выбранные отзывы')
+    def make_published(self, request, queryset):
+        queryset.update(is_published=True)

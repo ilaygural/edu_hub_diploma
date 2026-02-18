@@ -72,3 +72,49 @@ class Course(models.Model):
             models.Index(fields=['-time_create']),  # Для быстрой сортировки
             models.Index(fields=['slug']),  # Для поиска по URL
         ]
+
+
+class CourseReview(models.Model):
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name="Курс"
+    )
+    user = models.ForeignKey(
+        'auth.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Пользователь'
+    )
+    name = models.CharField(
+        max_length=100,
+        verbose_name='Имя'
+    )
+    email = models.EmailField(
+        verbose_name="Email"
+    )
+    text = models.TextField(
+        verbose_name='Отзыв'
+    )
+    rating = models.IntegerField(
+        choices=[(i, f"{i} ★") for i in range(1, 6)],
+        verbose_name='Оценка'
+    )
+    is_published = models.BooleanField(
+        default=False,
+        verbose_name="Опубликован"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата"
+    )
+
+    class Meta:
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'f{self.name} - {self.course.title}'

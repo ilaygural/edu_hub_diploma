@@ -1,5 +1,7 @@
 from django import forms
 
+from core.models import CourseReview
+
 
 #  простая несвязанная форма для обратной связи (на почту)
 class CourseQuestionForm(forms.Form):
@@ -37,3 +39,25 @@ class CourseQuestionForm(forms.Form):
                 )
 
         return question
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = CourseReview
+        fields = ['name', 'email', 'text', 'rating']
+        widgets = {
+            'text': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'rating': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        if self.user and self.user.is_authenticated:
+            self.fields['name'].initial = self.user.get_full_name() or self.user.username
+            self.fields['email'].initial = self.user.email
+            self.fields['name'].widget.attrs['readonly'] = True
+            self.fields['email'].widget.attrs['readonly'] = True
+            self.fields['name'].required = False
+            self.fields['email'].required = False
+
