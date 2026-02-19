@@ -4,7 +4,7 @@ from django.db.models import Value, BooleanField
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .form import CourseQuestionForm, ReviewForm
+from .forms import CourseQuestionForm, ReviewForm
 from .models import Course, Tag
 
 
