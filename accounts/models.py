@@ -55,7 +55,7 @@ class Pupil(models.Model):
 
     # Даты
     enrolled_date = models.DateField(
-        auto_now=True,
+        auto_now_add=True,
         verbose_name='Даты регистрации'
     )
     updated_at = models.DateTimeField(
@@ -139,6 +139,7 @@ class Parent(models.Model):
     children = models.ManyToManyField(
         Pupil,
         blank=True,
+        related_name='parents',
         verbose_name="Дети"
     )
 

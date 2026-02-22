@@ -117,4 +117,4 @@ class CourseReview(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f'f{self.name} - {self.course.title}'
+        return f'{self.name} - {self.course.title}'

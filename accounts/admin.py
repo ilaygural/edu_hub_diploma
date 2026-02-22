@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db.models import Count
+
 from .models import Pupil, Teacher, Parent
 from datetime import date
 
@@ -16,12 +18,15 @@ class HasParentFilter(admin.SimpleListFilter):
         ]
 
     def queryset(self, request, queryset):
-        if self.value() == 'yes':
-            return queryset.filter(parent__isnull=False)
-        if self.value() == 'no':
-            return queryset.filter(parent__isnull=True)
-        else:
-            return queryset
+        queryset = queryset.annotate(parents_count=Count('parents'))
+
+        if self.value() == "yes":
+            # Оставляем только тех, у кого есть хотя бы один родитель
+            return queryset.filter(parents_count__gt=0)
+        elif self.value() == "no":
+            # Оставляем только тех, у кого нет ни одного родителя
+            return queryset.filter(parents_count=0)
+        return queryset
 
 
 # admin.site.register(Pupil)

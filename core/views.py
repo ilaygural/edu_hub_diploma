@@ -1,10 +1,12 @@
+import uuid
+
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.models import Value, BooleanField
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .forms import CourseQuestionForm, ReviewForm
+from .forms import CourseQuestionForm, ReviewForm, UploadFileForm
 from .models import Course, Tag
 
 
@@ -27,7 +29,8 @@ def kpi_dashboard(request):
 
 def home(request):
     """Главная страница"""
-    count_courses = cache.get_or_set('courses_count', Course.objects.count, 60)
+    # count_courses = cache.get_or_set('courses_count', Course.objects.count, 60)
+    count_courses = Course.objects.count()
     context = {
         'title': 'EduHub - Главная',
         'courses_count': count_courses,
@@ -127,20 +130,18 @@ def add_review(request, course_id):
             review = form.save(commit=False)
             review.course = course
             if request.user.is_authenticated:
-                review.reviewed_by = request.user
+                review.user = request.user
 
                 if not form.cleaned_data['name']:
                     review.name = request.user.get_full_name() or request.user.username
 
                 if not form.cleaned_data['email']:
-                    review.email = request.user.email
-        review.save()
-        messages.success(request, "Спасибо! Отзыв отправлен на модерацию")
-
-        return redirect('course_detail', course_slug=course.slug)
+                    review.email = request.user
+            review.save()
+            messages.success(request, "Спасибо! Отзыв отправлен на модерацию")
+            return redirect('course_detail', course_slug=course.slug)
     else:
         form = ReviewForm(user=request.user)
-    print("Рендерю шаблон, slug:", course.slug)
     return render(request, 'core/add_review.html', {
         'form': form,
         'course': course,
@@ -156,5 +157,31 @@ def schedule(request):
     return render(request, 'core/schedule.html', {'title': 'Расписание'})
 
 
+def handle_uploaded_file(f):
+    print(f"СОХРАНЯЕМ ФАЙЛ: {f.name}")
+    name = f.name
+    ext = ""
+
+    if '.' in name:
+        ext = name[name.rindex('.'):]
+        name = name[:name.rindex('.')]
+    suffix = str(uuid.uuid4())
+    filename = f"uploads/{name}_{suffix}{ext}"
+    with open(filename, "wb+") as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+    return filename
+
+
 def about(request):
-    return render(request, 'core/about.html', {'title': 'О нас'})
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            saved_path = handle_uploaded_file(request.FILES['file'])
+            return render(request, 'core/about.html', {
+                'form': form,
+                'success': f'Файл сохранен: {saved_path}'
+            })
+    else:
+        form = UploadFileForm()
+    return render(request, 'core/about.html', {'title': 'О нас', 'form': form})

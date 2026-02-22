@@ -60,3 +60,6 @@ class ReviewForm(forms.ModelForm):
             self.fields['email'].widget.attrs['readonly'] = True
             self.fields['name'].required = False
             self.fields['email'].required = False
+
+class UploadFileForm(forms.Form):
+    file = forms.FileField(label="Выберите файл")

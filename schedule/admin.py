@@ -55,7 +55,7 @@ class AttendanceAdmin(admin.ModelAdmin):
 class ScheduleAdmin(admin.ModelAdmin):
     list_display = ['group', 'lesson_date', 'start_time', 'end_time', 'teacher']
     list_filter = ['group', 'lesson_date']
-    search_fields = ['pupil__user__last_name', 'group__name']
+    search_fields = ['group__name', 'teacher__user__last_name']
 
 
 # admin.site.register(Payment)

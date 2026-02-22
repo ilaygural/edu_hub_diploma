@@ -13,7 +13,7 @@ def get_courses_count():
     """Возвращает общее количество курсов"""
     count = cache.get('courses_count')
     if count is None:
-        count = Course.objects.count()
+        count = cache.get_or_set('courses_count', Course.objects.count, 60)
         cache.set('courses_count', count, 60)  # кэш на 60 секунд
     return count
 
