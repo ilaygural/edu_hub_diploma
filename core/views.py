@@ -158,7 +158,7 @@ def schedule(request):
 
 
 def handle_uploaded_file(f):
-    print(f"СОХРАНЯЕМ ФАЙЛ: {f.name}")
+    # print(f"СОХРАНЯЕМ ФАЙЛ: {f.name}")
     name = f.name
     ext = ""
 
