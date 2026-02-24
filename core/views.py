@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .forms import CourseQuestionForm, ReviewForm, UploadFileForm
-from .models import Course, Tag
+from .models import Course, Tag, UploadFiles
 
 
 # Create your views here.
@@ -157,27 +157,28 @@ def schedule(request):
     return render(request, 'core/schedule.html', {'title': 'Расписание'})
 
 
-def handle_uploaded_file(f):
-    # print(f"СОХРАНЯЕМ ФАЙЛ: {f.name}")
-    name = f.name
-    ext = ""
-
-    if '.' in name:
-        ext = name[name.rindex('.'):]
-        name = name[:name.rindex('.')]
-    suffix = str(uuid.uuid4())
-    filename = f"uploads/{name}_{suffix}{ext}"
-    with open(filename, "wb+") as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
-    return filename
+# def handle_uploaded_file(f):
+#     # print(f"СОХРАНЯЕМ ФАЙЛ: {f.name}")
+#     name = f.name
+#     ext = ""
+#
+#     if '.' in name:
+#         ext = name[name.rindex('.'):]
+#         name = name[:name.rindex('.')]
+#     suffix = str(uuid.uuid4())
+#     filename = f"uploads/{name}_{suffix}{ext}"
+#     with open(filename, "wb+") as destination:
+#         for chunk in f.chunks():
+#             destination.write(chunk)
+#     return filename
 
 
 def about(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            saved_path = handle_uploaded_file(request.FILES['file'])
+            saved_path = UploadFiles(file=form.cleaned_data['file'])
+            saved_path.save()
             return render(request, 'core/about.html', {
                 'form': form,
                 'success': f'Файл сохранен: {saved_path}'

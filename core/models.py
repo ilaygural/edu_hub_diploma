@@ -35,9 +35,9 @@ class Course(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена', default=0)
     slug = models.SlugField(max_length=200, unique=True, db_index=True, verbose_name='URL')
     code = models.CharField(max_length=20, unique=True, verbose_name="Код курса")
-    # НОВЫЕ ПОЛЯ по аналогии с учебным проектом:
     time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
     time_update = models.DateTimeField(auto_now=True, verbose_name='Время изменения')
+    photo = models.ImageField(upload_to="photos/%Y/%m/%d/", default=None, blank=True, null=True, verbose_name="Фото")
 
     is_published = models.IntegerField(
         choices=Status.choices,
@@ -118,3 +118,6 @@ class CourseReview(models.Model):
 
     def __str__(self):
         return f'{self.name} - {self.course.title}'
+
+class UploadFiles(models.Model):
+    file = models.FileField(upload_to='uploads_model')

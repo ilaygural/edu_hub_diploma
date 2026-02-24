@@ -31,7 +31,7 @@ class HasTeacherFilter(admin.SimpleListFilter):
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    fields = ['title', 'slug', 'code', 'description', 'price', 'is_published', 'tags', 'teachers']
+    fields = ['title', 'slug', 'code', 'description', 'price', 'is_published', 'tags', 'teachers', 'photo']
     readonly_fields = ['time_create', 'time_update']
     prepopulated_fields = {'slug':("title",)}
     list_display = ['title', 'code', 'slug', 'is_published', 'short_desc', 'teacher_list']
