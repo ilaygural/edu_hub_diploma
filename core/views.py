@@ -58,7 +58,10 @@ def course_detail(request, course_slug):
     Детальная страница курса по его слагу
     Доступны только опубликованные курсы (is_published=True)
     """
-    course = get_object_or_404(Course.published, slug=course_slug)
+    course = get_object_or_404(
+        Course.published.prefetch_related('tags', 'teachers'),
+        slug=course_slug
+    )
     context = {
         'title': f'Курс: {course.title}',
         'course': course,
@@ -67,7 +70,10 @@ def course_detail(request, course_slug):
 
 
 def course_detail_by_slug(request, slug):
-    course = get_object_or_404(Course, slug=slug)
+    course = get_object_or_404(
+        Course.objects.prefetch_related('tags', 'teachers'),
+        slug=slug
+    )
     return render(request, 'core/course_detail.html', {'course': course})
 
 
@@ -81,10 +87,12 @@ def courses_by_tag(request, tag_slug):
         .filter(tags=tag)
         .prefetch_related('tags', 'teachers')
     )
+    total = courses.count()
     context = {
         'title': f'Тег: {tag.name}',
         'tag': tag,
         'courses': courses,
+        'total': total,
         'page_type': 'tag'  # Чтобы в шаблоне отличать от обычного списка
     }
     return render(request, 'core/courses_list.html', context)

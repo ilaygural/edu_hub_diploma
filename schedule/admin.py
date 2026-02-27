@@ -41,6 +41,10 @@ class EnrollmentAdmin(admin.ModelAdmin):
     list_display = ['pupil', 'group', 'date_from', 'date_to', 'is_active']
     list_filter = ['date_from', 'group']
     search_fields = ['pupil__user__last_name', 'group__name']
+    # Убираем N+1 по pupil->user и group
+    list_select_related = ('pupil__user', 'group')
+    # Не подгружаем весь список вариантов сразу
+    autocomplete_fields = ('pupil', 'group')
 
 
 # admin.site.register(Attendance)
@@ -49,6 +53,9 @@ class AttendanceAdmin(admin.ModelAdmin):
     list_display = ['pupil', 'lesson_date', 'status']
     list_filter = ['status', 'lesson_date']
     search_fields = ['pupil__user__last_name']
+    # Убираем N+1 по pupil->user
+    list_select_related = ('pupil__user',)
+    autocomplete_fields = ('pupil',)
 
 
 @admin.register(Schedule)
@@ -56,6 +63,9 @@ class ScheduleAdmin(admin.ModelAdmin):
     list_display = ['group', 'lesson_date', 'start_time', 'end_time', 'teacher']
     list_filter = ['group', 'lesson_date']
     search_fields = ['group__name', 'teacher__user__last_name']
+    # Убираем N+1 по group и teacher (и сразу пользователя преподавателя)
+    list_select_related = ('group', 'teacher', 'teacher__user')
+    autocomplete_fields = ('group', 'teacher')
 
 
 # admin.site.register(Payment)
@@ -64,3 +74,6 @@ class PaymentAdmin(admin.ModelAdmin):
     list_display = ['pupil', 'amount', 'payment_date', 'purpose', 'is_recent']
     list_filter = ['purpose', 'payment_date']
     search_fields = ['pupil__user__last_name']
+    # Убираем N+1 по pupil->user
+    list_select_related = ('pupil__user',)
+    autocomplete_fields = ('pupil',)

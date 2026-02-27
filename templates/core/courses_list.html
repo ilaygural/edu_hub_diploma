@@ -10,13 +10,13 @@
     <!-- Заголовок с учётом типа страницы -->
     {% if page_type == 'tag' %}
         <h1>Курсы с тегом: <span class="badge bg-primary">{{ tag.name }}</span></h1>
-        <p class="text-muted">Всего курсов: {{ courses.count }}</p>
+        <p class="text-muted">Всего курсов: {{ total }}</p>
         <a href="{% url 'courses_list' %}" class="btn btn-outline-secondary btn-sm">
             ← Все курсы
         </a>
     {% else %}
         <h1>{{ title }}</h1>
-        <p class="text-muted">Всего курсов: {{ courses.count }}</p>
+        <p class="text-muted">Всего курсов: {{ total|default:courses|length }}</p>
     {% endif %}
 
     <hr>
