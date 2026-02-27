@@ -15,9 +15,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', includes('blog.urls'))
 """
 from debug_toolbar.toolbar import debug_toolbar_urls
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
+from config import settings
 from config.views import page_not_found, server_error
 from core import views
 from core.views import home
@@ -27,6 +29,10 @@ urlpatterns = [
     path('', include('core.urls')),
     # path("", includes("schedule.urls")),
 ]  + debug_toolbar_urls()
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
 handler404 = page_not_found  # добавление функции своего ответа
 handler500 = server_error

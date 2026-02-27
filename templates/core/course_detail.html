@@ -15,6 +15,10 @@
 {% endif %}
 <h1>{{ course.title }}</h1>
 
+{% if course.photo %}
+    <img src="{{ course.photo.url }}" alt="{{ course.title }}" class="course-image">
+{% endif %}
+
 <p>
     <strong>Код курса:</strong> {{ course.code }}<br>
     <strong>Создан:</strong> {{ course.time_create|date:"d.m.Y H:i" }}<br>
