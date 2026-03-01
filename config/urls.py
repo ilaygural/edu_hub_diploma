@@ -22,7 +22,7 @@ from django.urls import path, include
 from config import settings
 from config.views import page_not_found, server_error
 from core import views
-from core.views import home
+# from core.views import home
 
 urlpatterns = [
     path('admin/', admin.site.urls),

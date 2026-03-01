@@ -6,6 +6,9 @@ from django.db.models import Value, BooleanField
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.views import View
+from django.views.generic import TemplateView
+
 from .forms import CourseQuestionForm, ReviewForm, UploadFileForm
 from .models import Course, Tag, UploadFiles
 
@@ -27,16 +30,25 @@ def kpi_dashboard(request):
     return render(request, 'core/kpi_dashboard.html', context=kpi_data)
 
 
-def home(request):
-    """Главная страница"""
-    # count_courses = cache.get_or_set('courses_count', Course.objects.count, 60)
-    count_courses = Course.objects.count()
-    context = {
-        'title': 'EduHub - Главная',
-        'courses_count': count_courses,
-    }
-    return render(request, 'home.html', context)
+# def home(request):
+#     """Главная страница"""
+#     # count_courses = cache.get_or_set('courses_count', Course.objects.count, 60)
+#     count_courses = Course.objects.count()
+#     context = {
+#         'title': 'EduHub - Главная',
+#         'courses_count': count_courses,
+#     }
+#     return render(request, 'home.html', context)
 
+class HomeView(TemplateView):
+    template_name = 'home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'EduHub - Главная'
+        context['courses_count'] = Course.objects.count()
+        # main_menu приходит автоматически из контекстного процессора
+        return context
 
 def courses_list(request):
     """Страница со списком всех курсов с поиском"""
@@ -181,8 +193,25 @@ def schedule(request):
 #     return filename
 
 
-def about(request):
-    if request.method == 'POST':
+# def about(request):
+#     if request.method == 'POST':
+#         form = UploadFileForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             saved_path = UploadFiles(file=form.cleaned_data['file'])
+#             saved_path.save()
+#             return render(request, 'core/about.html', {
+#                 'form': form,
+#                 'success': f'Файл сохранен: {saved_path}'
+#             })
+#     else:
+#         form = UploadFileForm()
+#     return render(request, 'core/about.html', {'form': form})
+
+class AboutView(View):
+    def get(self, request):
+        form  = UploadFileForm()
+        return render(request, 'core/about.html', {'form': form})
+    def post(self, request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             saved_path = UploadFiles(file=form.cleaned_data['file'])
@@ -191,6 +220,4 @@ def about(request):
                 'form': form,
                 'success': f'Файл сохранен: {saved_path}'
             })
-    else:
-        form = UploadFileForm()
-    return render(request, 'core/about.html', {'title': 'О нас', 'form': form})
+        return render(request, 'core/about.html', {'form': form})
