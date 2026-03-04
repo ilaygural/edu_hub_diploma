@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views import View
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView
 
 from .forms import CourseQuestionForm, ReviewForm, UploadFileForm
 from .models import Course, Tag, UploadFiles
@@ -50,6 +50,7 @@ class HomeView(TemplateView):
         # main_menu приходит автоматически из контекстного процессора
         return context
 
+
 def courses_list(request):
     """Страница со списком всех курсов с поиском"""
     search_query = request.GET.get('search', '')
@@ -63,6 +64,25 @@ def courses_list(request):
         'courses': qs,
         'search_query': search_query,
     })
+
+
+class CourseListView(ListView):
+    model = Course
+    context_object_name = 'courses'
+    allow_empty = False
+    template_name = 'core/courses.html'
+
+    def get_queryset(self):
+        qs = Course.objects.all().prefetch_related('tags', 'teachers')
+        search_query = self.request.GET.get('search', '')
+        if search_query:
+            qs = qs.filter(title__icontains=search_query)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('search', '')
+        return context
 
 
 def course_detail(request, course_slug):
@@ -209,8 +229,9 @@ def schedule(request):
 
 class AboutView(View):
     def get(self, request):
-        form  = UploadFileForm()
+        form = UploadFileForm()
         return render(request, 'core/about.html', {'form': form})
+
     def post(self, request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
