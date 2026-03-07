@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.views import View
 from django.views.generic import TemplateView, ListView
 
+from accounts.models import Teacher
 from .forms import CourseQuestionForm, ReviewForm, UploadFileForm
 from .models import Course, Tag, UploadFiles
 
@@ -242,3 +243,18 @@ class AboutView(View):
                 'success': f'Файл сохранен: {saved_path}'
             })
         return render(request, 'core/about.html', {'form': form})
+
+
+class TeacherListView(ListView):
+    model = Teacher
+    template_name = 'core/teachers.html'
+    context_object_name = 'teachers'
+
+
+    def get_queryset(self):
+        return Teacher.objects.all().prefetch_related('courses')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "Наши преподаватели"
+        return context

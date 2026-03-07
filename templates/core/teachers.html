@@ -2,6 +2,24 @@
 {% extends 'base.html' %}
 {% block title %}Преподаватели{% endblock %}
 {% block content %}
-<h1>Преподаватели</h1>
-<p>Страница в разработке. Здесь будет список преподавателей.</p>
+<h1>Наши преподаватели</h1>
+
+<div class="teachers-list">
+    {% for teacher in teachers %}
+    <div class="teacher-card">
+        <h3>{{ teacher.get_full_name }}</h3>
+        {% if teacher.avatar %}
+            <img src="{{ teacher.avatar.url }}" alt="{{ teacher.name }}" width="100">
+        {% endif %}
+        <p>{{ teacher.bio|truncatewords:30 }}</p>
+        <p><strong>Курсы:</strong>
+            {% for course in teacher.courses.all %}
+                {{ course.title }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+    </div>
+    {% empty %}
+    <p>Пока нет преподавателей</p>
+    {% endfor %}
+</div>
 {% endblock %}
