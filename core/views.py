@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views import View
-from django.views.generic import TemplateView, ListView
+from django.views.generic import TemplateView, ListView, DetailView
 
 from accounts.models import Teacher
 from .forms import CourseQuestionForm, ReviewForm, UploadFileForm
@@ -101,6 +101,18 @@ def course_detail(request, course_slug):
     }
     return render(request, 'core/course_detail.html', context)
 
+class CourseDetailView(DetailView):
+    model = Course
+    context_object_name = 'course'
+    slug_url_kwarg = 'slug'
+
+    def get_object(self, queryset=None):
+        return Course.published.prefetch_related('tags', 'teachers')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f"Курс: {self.object.title}"
+        return context
 
 def course_detail_by_slug(request, slug):
     course = get_object_or_404(
@@ -190,8 +202,8 @@ def add_review(request, course_id):
     })
 
 
-def teachers(request):
-    return render(request, 'core/teachers.html', {'title': 'Преподаватели'})
+# def teachers(request):
+#     return render(request, 'core/teachers.html', {'title': 'Преподаватели'})
 
 
 def schedule(request):
