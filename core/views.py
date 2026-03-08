@@ -6,8 +6,9 @@ from django.db.models import Value, BooleanField
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import TemplateView, ListView, DetailView
+from django.views.generic import TemplateView, ListView, DetailView, FormView
 
 from accounts.models import Teacher
 from .forms import CourseQuestionForm, ReviewForm, UploadFileForm
@@ -104,10 +105,13 @@ def course_detail(request, course_slug):
 class CourseDetailView(DetailView):
     model = Course
     context_object_name = 'course'
-    slug_url_kwarg = 'slug'
+    slug_url_kwarg = 'course_slug'
 
     def get_object(self, queryset=None):
-        return Course.published.prefetch_related('tags', 'teachers')
+        return get_object_or_404(
+            Course.published.prefetch_related('tags', 'teachers'),
+            slug=self.kwargs[self.slug_url_kwarg]
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -143,64 +147,137 @@ def courses_by_tag(request, tag_slug):
     return render(request, 'core/courses_list.html', context)
 
 
-def ask_course_question(request, course_id):
-    course = get_object_or_404(Course, id=course_id)
-    if request.method == 'POST':
-        form = CourseQuestionForm(request.POST)
-        if form.is_valid():
-            # Данные из формы
-            name = form.cleaned_data['name']
-            email = form.cleaned_data['email']
-            question = form.cleaned_data['question']
+# def ask_course_question(request, course_id):
+#     course = get_object_or_404(Course, id=course_id)
+#     if request.method == 'POST':
+#         form = CourseQuestionForm(request.POST)
+#         if form.is_valid():
+#             # Данные из формы
+#             name = form.cleaned_data['name']
+#             email = form.cleaned_data['email']
+#             question = form.cleaned_data['question']
+#
+#             # отправка письма (пока консоль)
+#             subject = f"Вопрос по курсу: {course.title}"
+#             message = f'От {name} ({email}\nВопрос: {question})'
+#             send_mail(
+#                 subject,
+#                 message,
+#                 email,  # от кого
+#                 ['admin@edu-hub.ru'],  # кому (админ)
+#                 fail_silently=False,
+#             )
+#             messages.success(request, 'Ваш вопрос отправлен. Мы ответим вам на email.')
+#             # print(f"SLUG: '{course.slug}'")
+#             return redirect('course_detail', course_slug=course.slug)
+#     else:
+#         form = CourseQuestionForm()
+#     return render(request, 'core/ask_question.html', {
+#         'form': form,
+#         'course': course,
+#         'title': f"Вопрос по курсе: {course.title}",
+#     })
 
-            # отправка письма (пока консоль)
-            subject = f"Вопрос по курсу: {course.title}"
-            message = f'От {name} ({email}\nВопрос: {question})'
-            send_mail(
-                subject,
-                message,
-                email,  # от кого
-                ['admin@edu-hub.ru'],  # кому (админ)
-                fail_silently=False,
-            )
-            messages.success(request, 'Ваш вопрос отправлен. Мы ответим вам на email.')
-            # print(f"SLUG: '{course.slug}'")
-            return redirect('course_detail', course_slug=course.slug)
-    else:
-        form = CourseQuestionForm()
-    return render(request, 'core/ask_question.html', {
-        'form': form,
-        'course': course,
-        'title': f"Вопрос по курсе: {course.title}",
-    })
+
+class AskQuestionView(FormView):
+    template_name = 'core/ask_question.html'
+    form_class = CourseQuestionForm
+
+    def get_success_url(self):
+        """Возвращаем URL курса после успешной отправки"""
+        course = self.get_course()
+        return reverse_lazy('course_detail', kwargs={'course_slug': course.slug})
+
+    def get_course(self):
+        """Вспомогательный метод для получения курса"""
+        course_id = self.kwargs.get('course_id')
+        return get_object_or_404(Course, id=course_id)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        course = self.get_course()
+        context['course'] = course
+        context['title'] = f"Вопрос по курсу: {course.title}"
+        return context
+
+    def form_valid(self, form):
+        course = self.get_course()
+
+        # Данные из формы
+        name = form.cleaned_data['name']
+        email = form.cleaned_data['email']
+        question = form.cleaned_data['question']
+
+        # Отправка письма
+        subject = f"Вопрос по курсу: {course.title}"
+        message = f'От {name} ({email}\nВопрос: {question})'
+        send_mail(
+            subject,
+            message,
+            email,
+            ['admin@edu-hub.ru'],
+            fail_silently=False,
+        )
+
+        messages.success(self.request, 'Ваш вопрос отправлен. Мы ответим вам на email.')
+        return super().form_valid(form)
 
 
-def add_review(request, course_id):
-    course = get_object_or_404(Course, id=course_id)
-    if request.method == 'POST':
-        form = ReviewForm(request.POST, user=request.user)
-        if form.is_valid():
-            review = form.save(commit=False)
-            review.course = course
-            if request.user.is_authenticated:
-                review.user = request.user
 
-                if not form.cleaned_data['name']:
-                    review.name = request.user.get_full_name() or request.user.username
 
-                if not form.cleaned_data['email']:
-                    review.email = request.user
-            review.save()
-            messages.success(request, "Спасибо! Отзыв отправлен на модерацию")
-            return redirect('course_detail', course_slug=course.slug)
-    else:
-        form = ReviewForm(user=request.user)
-    return render(request, 'core/add_review.html', {
-        'form': form,
-        'course': course,
-        'title': f"Отзыв на курс: {course.title}",
-    })
+# def add_review(request, course_id):
+#     course = get_object_or_404(Course, id=course_id)
+#     if request.method == 'POST':
+#         form = ReviewForm(request.POST, user=request.user)
+#         if form.is_valid():
+#             review = form.save(commit=False)
+#             review.course = course
+#             if request.user.is_authenticated:
+#                 review.user = request.user
+#
+#                 if not form.cleaned_data['name']:
+#                     review.name = request.user.get_full_name() or request.user.username
+#
+#                 if not form.cleaned_data['email']:
+#                     review.email = request.user
+#             review.save()
+#             messages.success(request, "Спасибо! Отзыв отправлен на модерацию")
+#             return redirect('course_detail', course_slug=course.slug)
+#     else:
+#         form = ReviewForm(user=request.user)
+#     return render(request, 'core/add_review.html', {
+#         'form': form,
+#         'course': course,
+#         'title': f"Отзыв на курс: {course.title}",
+#     })
 
+
+class AddReviewView(FormView):
+    template_name = 'core/add_review.html'
+    form_class = ReviewForm
+
+    def get_success_url(self):
+        course = get_object_or_404(Course, id=self.kwargs['course_id'])
+        return reverse_lazy('course_detail', kwargs={'course_slug': course.slug})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['course'] = get_object_or_404(Course, id=self.kwargs['course_id'])
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        # Если форма ожидает user
+        if hasattr(self.form_class, 'user'):
+            kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        review = form.save(commit=False)
+        review.course_id = self.kwargs['course_id']
+        review.save()
+        messages.success(self.request, "Спасибо! Отзыв отправлен на модерацию")
+        return super().form_valid(form)
 
 # def teachers(request):
 #     return render(request, 'core/teachers.html', {'title': 'Преподаватели'})

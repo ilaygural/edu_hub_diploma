@@ -14,6 +14,6 @@ urlpatterns = [
     path('course/<slug:course_slug>/', views.CourseDetailView.as_view(), name='course_detail'),
     # path('course/', views.courses_list, name='courses_list'),
     path('tag/<slug:tag_slug>/', views.courses_by_tag, name='courses_by_tag'),
-    path('course/<int:course_id>/ask/', views.ask_course_question, name='ask_question'),
-    path('course/<int:course_id>/review/', views.add_review, name='add_review'),
+    path('course/<int:course_id>/ask/', views.AskQuestionView.as_view(), name='ask_question'),
+    path('course/<int:course_id>/review/', views.AddReviewView.as_view(), name='add_review'),
 ]
