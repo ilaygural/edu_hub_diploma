@@ -1,5 +1,6 @@
 from django.db import models
 from django.urls import reverse
+from pytils.translit import slugify
 
 
 class PublishedManager(models.Manager):
@@ -63,6 +64,19 @@ class Course(models.Model):
 
     def get_absolute_url(self):
         return reverse('course_detail', kwargs={'course_slug': self.slug})
+
+    def save(self, *args, **kwargs):
+        # Если слаг не указан, создаём из названия
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+            # Проверяем уникальность
+            while Course.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Курс'

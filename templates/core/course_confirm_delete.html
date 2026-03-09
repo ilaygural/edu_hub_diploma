@@ -1,0 +1,18 @@
+<!-- core/templates/core/course_confirm_delete.html -->
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ title }}</h2>
+
+    <div class="alert alert-danger">
+        <p>Вы уверены, что хотите удалить курс "{{ object.title }}"?</p>
+        <p class="text-muted">Это действие нельзя отменить.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Да, удалить</button>
+        <a href="{% url 'course_detail'  course_slug=object.slug %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+{% endblock %}

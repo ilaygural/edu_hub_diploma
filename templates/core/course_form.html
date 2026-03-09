@@ -1,0 +1,33 @@
+<!-- core/templates/core/course_form.html -->
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ title }}</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="mb-3">
+            <label for="{{ field.id_for_label }}" class="form-label">
+                {{ field.label }}
+            </label>
+            {{ field }}
+            {% if field.errors %}
+            <div class="text-danger">
+                {{ field.errors }}
+            </div>
+            {% endif %}
+            {% if field.help_text %}
+            <div class="form-text">{{ field.help_text }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary">
+            {% if object %}Сохранить{% else %}Добавить{% endif %}
+        </button>
+        <a href="{% url 'courses' %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+{% endblock %}

@@ -7,8 +7,9 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse_lazy
+from django.utils.text import slugify
 from django.views import View
-from django.views.generic import TemplateView, ListView, DetailView, FormView
+from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
 
 from accounts.models import Teacher
 from .forms import CourseQuestionForm, ReviewForm, UploadFileForm
@@ -346,4 +347,42 @@ class TeacherListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = "Наши преподаватели"
+        return context
+
+class CourseCreateView(CreateView):
+    model = Course
+    fields = ['title', 'description', 'price', 'code', 'photo', 'is_published', 'tags', 'teachers']
+    template_name = 'core/course_form.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "Добавление курса"
+        return context
+
+    def get_success_url(self):
+        return reverse_lazy('course_detail', kwargs={'course_slug': self.object.slug})
+
+
+class CourseUpdateView(UpdateView):
+    model = Course
+    fields = ['title', 'description', 'price', 'code', 'photo', 'is_published', 'tags', 'teachers']
+    template_name = 'core/course_form.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Редактирование: {self.object.title}'
+        return context
+
+    def get_success_url(self):
+        return reverse_lazy('course_detail', kwargs={'course_slug': self.object.slug})
+
+
+class CourseDeleteView(DeleteView):
+    model = Course
+    template_name = 'core/course_confirm_delete.html'  # шаблон подтверждения
+    success_url = reverse_lazy('courses')  # после удаления — на список
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Удаление курса: {self.object.title}'
         return context

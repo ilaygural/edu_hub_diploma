@@ -64,4 +64,10 @@
 </p>
 <a href="{% url 'ask_question' course.id %}" class="btn btn-question">Задать вопрос по курсу</a>
 <a href="{% url 'add_review' course.id %}" class="btn">Оставить отзыв</a>
+<a href="{% url 'course_edit' slug=course.slug %}" class="btn btn-warning">
+    Редактировать
+</a>
+<a href="{% url 'course_delete' slug=course.slug %}" class="btn btn-danger">
+    Удалить
+</a>
 {% endblock %}

@@ -4,6 +4,9 @@ from . import views
 
 urlpatterns = [
     path('', views.HomeView.as_view(), name='home'),
+    path('courses/create/', views.CourseCreateView.as_view(), name='course_create'),
+    path('courses/<slug:slug>/delete/', views.CourseDeleteView.as_view(), name='course_delete'),
+    path('courses/<slug:slug>/edit/', views.CourseUpdateView.as_view(), name='course_edit'),
     path('courses/', views.CourseListView.as_view(), name='courses'),
     path('courses/<slug:slug>/', views.course_detail_by_slug, name='course_by_slug'),
     # path('courses/<int:pk>/', views.course_detail, name='course_detail'),
@@ -16,4 +19,5 @@ urlpatterns = [
     path('tag/<slug:tag_slug>/', views.courses_by_tag, name='courses_by_tag'),
     path('course/<int:course_id>/ask/', views.AskQuestionView.as_view(), name='ask_question'),
     path('course/<int:course_id>/review/', views.AddReviewView.as_view(), name='add_review'),
+
 ]
