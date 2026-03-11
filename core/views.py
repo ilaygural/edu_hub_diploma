@@ -13,6 +13,7 @@ from django.views.generic import TemplateView, ListView, DetailView, FormView, C
 
 from accounts.models import Teacher
 from .forms import CourseQuestionForm, ReviewForm, UploadFileForm
+from .mixins import DataMixin
 from .models import Course, Tag, UploadFiles
 
 
@@ -43,14 +44,14 @@ def kpi_dashboard(request):
 #     }
 #     return render(request, 'home.html', context)
 
-class HomeView(TemplateView):
+class HomeView(DataMixin, TemplateView):
     template_name = 'home.html'
-
+    title_page = 'Название страницы'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'EduHub - Главная'
+    #     context['title'] = 'EduHub - Главная'
         context['courses_count'] = Course.objects.count()
-        # main_menu приходит автоматически из контекстного процессора
+    #     # main_menu приходит автоматически из контекстного процессора
         return context
 
 
