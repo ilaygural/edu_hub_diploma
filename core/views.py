@@ -75,6 +75,7 @@ class CourseListView(ListView):
     context_object_name = 'courses'
     allow_empty = False
     template_name = 'core/courses.html'
+    paginate_by = 3
 
     def get_queryset(self):
         qs = Course.objects.all().prefetch_related('tags', 'teachers')

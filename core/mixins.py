@@ -6,7 +6,7 @@ menu = [
     {'title': 'ℹ️ О нас', 'url_name': 'about'},
     {'title': '🚀 KPI', 'url_name': 'kpi_dashboard'},
 ]
-class DataMixin():
+class DataMixin:
     title_page = None
     extra_context = {}
 
