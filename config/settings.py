@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'core.apps.CoreConfig',
     'schedule.apps.ScheduleConfig',
+    'users',
     "debug_toolbar",
 ]
 

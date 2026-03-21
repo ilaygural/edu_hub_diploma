@@ -22,17 +22,19 @@ from django.urls import path, include
 from config import settings
 from config.views import page_not_found, server_error
 from core import views
+
 # from core.views import home
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),
+    path('users/', include('users.urls', namespace="users")),
     # path("", includes("schedule.urls")),
-]  + debug_toolbar_urls()
+    path("__debug__/", include("debug_toolbar.urls")),
+]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
 
 handler404 = page_not_found  # добавление функции своего ответа
 handler500 = server_error
