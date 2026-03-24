@@ -6,7 +6,7 @@ def site_menu(request):
         {'title': '👨‍🏫 Преподаватели', 'url_name': 'teachers', 'active': False},
         {'title': '📅 Расписание', 'url_name': 'schedule', 'active': False},
         {'title': 'ℹ️ О нас', 'url_name': 'about', 'active': False},
-        {'title': '🚀 KPI', 'url_name': 'kpi_dashboard', 'active': False},
+        # {'title': '🚀 KPI', 'url_name': 'kpi_dashboard', 'active': False},
     ]
 
     # Определяем активный пункт меню
