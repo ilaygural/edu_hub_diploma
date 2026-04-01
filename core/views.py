@@ -1,5 +1,6 @@
 import uuid
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.models import Value, BooleanField
@@ -320,7 +321,7 @@ def schedule(request):
 #         form = UploadFileForm()
 #     return render(request, 'core/about.html', {'form': form})
 
-class AboutView(View):
+class AboutView(LoginRequiredMixin, View):
     def get(self, request):
         form = UploadFileForm()
         return render(request, 'core/about.html', {'form': form})
