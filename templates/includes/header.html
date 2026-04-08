@@ -18,12 +18,15 @@
                 {% if user.is_authenticated %}
                 <form method="post" action="{% url 'users:logout' %}" style="display:inline;">
                     {% csrf_token %}
-                     <button type="submit" style="background: none; border: none; cursor: pointer; color: inherit; text-decoration: underline; padding-left: 20px;">Выйти</button>
-                        {{ user.username }}
+                    <button type="submit"
+                            style="background: none; border: none; cursor: pointer; color: inherit; text-decoration: underline; padding-left: 20px;">
+                        Выйти
+                    </button>
+                    {{ user.username }}
                     </button>
                 </form>
                 {% else %}
-                <a href="{% url 'users:login' %}">Войти</a>|<a>Регистрация</a>
+                <a href="{% url 'users:login' %}">Войти</a><a href="{% url 'users:register' %}">Регистрация</a>
                 {% endif %}
             </nav>
         </div>
