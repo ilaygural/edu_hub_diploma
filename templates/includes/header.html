@@ -22,7 +22,7 @@
                             style="background: none; border: none; cursor: pointer; color: inherit; text-decoration: underline; padding-left: 20px;">
                         Выйти
                     </button>
-                    {{ user.username }}
+                    <a href="{% url 'users:profile' %}">{{ user.username }}</a>
                     </button>
                 </form>
                 {% else %}
