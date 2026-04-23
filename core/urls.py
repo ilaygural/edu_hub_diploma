@@ -1,11 +1,11 @@
 from django.urls import path
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView
 
 from . import views
 
 urlpatterns = [
-    path('', views.HomeView.as_view(), name='home'),
-
+    # path('', views.HomeView.as_view(), name='home'),
+    path('', RedirectView.as_view(url='/users/role-select/'), name='home'),
     # Courses
     path('courses/', views.CourseListView.as_view(), name='courses'),
     path('courses/create/', views.CourseCreateView.as_view(), name='course_create'),

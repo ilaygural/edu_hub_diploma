@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Выберите роль</h1>
+
+    <ul>
+        <li><a href="{% url 'users:profile' %}">Родитель</a></li>
+        <li><a href="{% url 'users:profile' %}">Педагог</a></li>
+        <li><a href="{% url 'users:profile' %}">Менеджер</a></li>
+    </ul>
+{% endblock %}
