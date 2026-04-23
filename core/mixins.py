@@ -4,7 +4,6 @@ menu = [
     {'title': '👨‍🏫 Преподаватели', 'url_name': 'teachers'},
     {'title': '📅 Расписание', 'url_name': 'schedule'},
     {'title': 'ℹ️ О нас', 'url_name': 'about'},
-    {'title': '🚀 KPI', 'url_name': 'kpi_dashboard'},
 ]
 class DataMixin:
     title_page = None
@@ -21,5 +20,4 @@ class DataMixin:
         if self.title_page:
             context['title'] = self.title_page
         context['menu'] = menu
-        context['cat_selected'] = None
         return context

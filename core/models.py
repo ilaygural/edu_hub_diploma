@@ -133,5 +133,6 @@ class CourseReview(models.Model):
     def __str__(self):
         return f'{self.name} - {self.course.title}'
 
+
 class UploadFiles(models.Model):
     file = models.FileField(upload_to='uploads_model')

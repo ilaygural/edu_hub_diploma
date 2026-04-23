@@ -32,16 +32,6 @@ def format_price(amount):
     return f"{amount:,} ₽".replace(",", " ")
 
 
-@register.simple_tag
-def get_project_status():
-    """Статус проекта для отображения в шапке/футере"""
-    return {
-        'text': 'в разработке',
-        'color': '#e74c3c',
-        'icon': '🚧'
-    }
-
-
 # ==================== INCLUSION TAGS ====================
 
 @register.inclusion_tag('core/includes/sidebar.html', takes_context=True)
@@ -66,13 +56,3 @@ def show_status_badge():
         'status': 'в разработке',
         'color': 'danger'  # danger, warning, success, info
     }
-
-
-# ==================== FILTERS (дополнительно) ====================
-
-@register.filter
-def shorten(text, length=50):
-    """Сокращает текст до указанной длины"""
-    if len(text) <= length:
-        return text
-    return text[:length] + "..."
