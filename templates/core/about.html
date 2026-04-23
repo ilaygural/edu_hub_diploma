@@ -1,19 +1,18 @@
-<!-- templates/core/teachers.html -->
 {% extends 'base.html' %}
 {% block title %}О нас{% endblock %}
 {% block content %}
-<h1>О нас</h1>
+    <h1>О нас</h1>
 
-<h2>Загрузка файла на сервер</h2>
-{% if success %}
-    <p style="color: green;">{{ success }}</p>
-<hr>
-{% endif %}
-<form action="" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <p>
-        <button type="submit">Отправить</button>
-    </p>
-</form>
+    <h2>Загрузка файла на сервер</h2>
+    {% if success %}
+        <p style="color: green;">{{ success }}</p>
+        <hr>
+    {% endif %}
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <p>
+            <button type="submit">Отправить</button>
+        </p>
+    </form>
 {% endblock %}

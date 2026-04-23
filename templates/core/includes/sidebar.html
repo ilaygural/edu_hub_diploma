@@ -1,4 +1,6 @@
+{% load static %}
 {% load core_tags %}
+<link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
 <div class="sidebar">
     <h4>📊 Статистика</h4>
     <ul>
@@ -9,13 +11,13 @@
     <h4>🎯 Популярные курсы</h4>
     <ul>
         {% for course in popular_courses %}
-        <li>
-            <a href="{{course.get_absolute_url }}">
-                {{ course.title|truncatewords:10}}
-            </a>
-        </li>
+            <li>
+                <a href="{{ course.get_absolute_url }}">
+                    {{ course.title|truncatewords:10 }}
+                </a>
+            </li>
         {% empty %}
-        <li>Курсов пока нет</li>
+            <li>Курсов пока нет</li>
         {% endfor %}
     </ul>
 
@@ -23,37 +25,3 @@
         {% show_status_badge %}
     </div>
 </div>
-
-<style>
-.sidebar {
-    background: #f8f9fa;
-    padding: 1.5rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
-}
-.sidebar h4 {
-    color: #2c3e50;
-    margin: 1.5rem 0 0.8rem;
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 0.5rem;
-}
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-}
-.sidebar li {
-    margin: 0.5rem 0;
-    padding: 0.5rem;
-    background: white;
-    border-radius: 4px;
-}
-.sidebar a {
-    text-decoration: none;
-    color: #3498db;
-}
-.sidebar-footer {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid #ddd;
-}
-</style>

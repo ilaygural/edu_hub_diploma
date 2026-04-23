@@ -11,19 +11,20 @@
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/header.css' %}">
     <link rel="stylesheet" href="{% static 'css/footer.css' %}">
+    <link rel="stylesheet" href="{% static 'css/courses.css' %}">
 
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    {% include 'includes/header.html' %}
+{% include 'includes/header.html' %}
 
-    <main class="container">
-        {% block content %}
-        {% endblock %}
-    </main>
+<main class="container">
+    {% block content %}
+    {% endblock %}
+</main>
 
-    {% include 'includes/footer.html' %}
+{% include 'includes/footer.html' %}
 
-    {% block extra_js %}{% endblock %}
+{% block extra_js %}{% endblock %}
 </body>
 </html>

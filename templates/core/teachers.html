@@ -1,25 +1,29 @@
-<!-- templates/core/teachers.html -->
 {% extends 'base.html' %}
 {% block title %}Преподаватели{% endblock %}
 {% block content %}
-<h1>Наши преподаватели</h1>
+    <h1>Наши преподаватели</h1>
 
-<div class="teachers-list">
-    {% for teacher in teachers %}
-    <div class="teacher-card">
-        <h3>{{ teacher.get_full_name }}</h3>
-        {% if teacher.avatar %}
-            <img src="{{ teacher.avatar.url }}" alt="{{ teacher.name }}" width="100">
-        {% endif %}
-        <p>{{ teacher.bio|truncatewords:30 }}</p>
-        <p><strong>Курсы:</strong>
-            {% for course in teacher.courses.all %}
-                {{ course.title }}{% if not forloop.last %}, {% endif %}
-            {% endfor %}
-        </p>
+    <div class="teachers-list">
+        {% for teacher in teachers %}
+            <div class="teacher-card">
+                <h3>{{ teacher.get_full_name }}</h3>
+                <p><strong>Квалификация:</strong> {{ teacher.qualification|default:"—" }}</p>
+                <p><strong>Специализация:</strong> {{ teacher.specialization|default:"—" }}</p>
+                <p><strong>Стаж:</strong> {{ teacher.experience_years }} лет</p>
+                <p><strong>Телефон:</strong> {{ teacher.phone|default:"—" }}</p>
+                <p><strong>Кабинет:</strong> {{ teacher.office|default:"—" }}</p>
+                <p><strong>Курсы:</strong>
+                    {% for course in teacher.courses.all %}
+                        {{ course.title }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        —
+                    {% endfor %}
+                </p>
+                <hr>
+                <br>
+            </div>
+        {% empty %}
+            <p>Пока нет преподавателей</p>
+        {% endfor %}
     </div>
-    {% empty %}
-    <p>Пока нет преподавателей</p>
-    {% endfor %}
-</div>
 {% endblock %}

@@ -2,101 +2,86 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/courses.css' %}">
+    <link rel="stylesheet" href="{% static 'css/courses.css' %}">
 {% endblock %}
 
 {% block content %}
-<h2>Наши курсы</h2>
+    <h2>Наши курсы</h2>
 
-<!-- Форма поиска -->
-<form method="get" action="{% url 'courses' %}" class="search-form">
-    <input type="text" name="search"
-           value="{{ search_query }}"
-           placeholder="Введите название курса..."
-           class="search-input">
-    <button type="submit" class="search-btn">Поиск</button>
-    {% if search_query %}
-    <a href="{% url 'courses' %}" class="clear-btn">Сбросить</a>
-    {% endif %}
-</form>
+    <!-- Форма поиска -->
+    <form method="get" action="{% url 'courses' %}" class="search-form">
+        <input type="text" name="search"
+               value="{{ search_query }}"
+               placeholder="Введите название курса..."
+               class="search-input">
+        <button type="submit" class="search-btn">Поиск</button>
+        {% if search_query %}
+            <a href="{% url 'courses' %}" class="clear-btn">Сбросить</a>
+        {% endif %}
+    </form>
 
-<!-- Статистика -->
-<p class="stats">Найдено: <strong>{{ courses|length }}</strong> курс{{ courses|length|pluralize:"а,ов" }}</p>
+    <!-- Статистика -->
+    <p class="stats">Найдено: <strong>{{ courses|length }}</strong> курс{{ courses|length|pluralize:"а,ов" }}</p>
 
-<!-- Список курсов -->
-{% for course in courses %}
-<!-- with для локальной переменной -->
-{% with short_desc=course.description|truncatewords:25 %}
-<div class="course-card
+    <!-- Список курсов -->
+    {% for course in courses %}
+        <!-- with для локальной переменной -->
+        {% with short_desc=course.description|truncatewords:25 %}
+            <div class="course-card
             {% if forloop.first %}first-course{% endif %}
             {% if forloop.last %}last-course{% endif %}
             {% cycle 'odd' 'even' %}">
 
-    <!-- Нумерация -->
-    <div class="course-header">
-        <span class="course-number">Курс #{{ forloop.counter }}</span>
-        {% if forloop.first %}
-        <span class="badge">Новый</span>
-        {% endif %}
-    </div>
+                <!-- Нумерация -->
+                <div class="course-header">
+                    <span class="course-number">Курс #{{ forloop.counter }}</span>
+                    {% if forloop.first %}
+                        <span class="badge">Новый</span>
+                    {% endif %}
+                </div>
 
-    <!-- Заголовок -->
-    <a href="{% url 'course_detail' course.slug %}">
-        <h3>{{ course.title|capfirst }}</h3>
-    </a>
+                <!-- Заголовок -->
+                <a href="{% url 'course_detail' course.slug %}">
+                    <h3>{{ course.title|capfirst }}</h3>
+                </a>
 
-    <!-- Код курса -->
-    <p class="code">
-        <strong>Код:</strong> {{ course.code|upper }}
-        {% if course.slug %}
-        | <strong>URL:</strong> /courses/{{ course.slug }}/
-        {% endif %}
-    </p>
+                <!-- Описание -->
+                <p class="description">
+                    {{ course.description|default:"Описание пока не добавлено." }}
+                </p>
 
-    <!-- Описание -->
-    <p class="description">
-        {{ course.description|default:"Описание пока не добавлено." }}
-    </p>
+                <!-- Краткое описание (через with) -->
+                {% if course.description %}
+                    <p class="short-desc">
+                        <em>Кратко:</em> {{ short_desc }}
+                    </p>
+                {% endif %}
 
-    <!-- Краткое описание (через with) -->
-    {% if course.description %}
-    <p class="short-desc">
-        <em>Кратко:</em> {{ short_desc }}
-    </p>
-    {% endif %}
 
-    <!-- Информация о итерации (для отладки, можно скрыть) -->
-    <div class="iteration-info">
-        <small>
-            Позиция: {{ forloop.counter }} из {{ forloop.revcounter }} осталось |
-            {% if not forloop.last %}Следующий: {{ forloop.next.title|default:"-" }}{% endif %}
-        </small>
-    </div>
-
-</div>
-{% endwith %}
-{% empty %}
-<p class="empty">
-    {% if search_query %}
-    По запросу "{{ search_query }}" курсов не найдено
-    {% else %}
-    Курсов пока нет. Добавьте первый курс через админку.
-    {% endif %}
-</p>
-{% endfor %}
-<a href="{% url 'course_create' %}" class="btn btn-success mb-3">
-    + Добавить курс
-</a>
-{% if page_obj.has_other_pages %}
-<div class="pagination">
-    {% for p in page_obj.paginator.page_range %}
-        {% if page_obj.number == p %}
-            <span>{{ p }}</span>
-        {% else %}
-            <a href="?page={{ p }}">{{ p }}</a>
-        {% endif %}
+            </div>
+        {% endwith %}
+    {% empty %}
+        <p class="empty">
+            {% if search_query %}
+                По запросу "{{ search_query }}" курсов не найдено
+            {% else %}
+                Курсов пока нет. Добавьте первый курс через админку.
+            {% endif %}
+        </p>
     {% endfor %}
-</div>
-{% endif %}
+    <a href="{% url 'course_create' %}" class="btn btn-success mb-3">
+        + Добавить курс
+    </a>
+    {% if page_obj.has_other_pages %}
+        <div class="pagination">
+            {% for p in page_obj.paginator.page_range %}
+                {% if page_obj.number == p %}
+                    <span>{{ p }}</span>
+                {% else %}
+                    <a href="?page={{ p }}">{{ p }}</a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
 
 {% endblock %}

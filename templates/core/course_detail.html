@@ -4,70 +4,70 @@
 {% block title %}{{ course.title }}{% endblock %}
 
 {% block content %}
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
-                {{ message }}
-            </li>
-        {% endfor %}
-    </ul>
-{% endif %}
-<h1>{{ course.title }}</h1>
-
-{% if course.photo %}
-    <img src="{{ course.photo.url }}" alt="{{ course.title }}" class="course-image">
-{% endif %}
-
-<p>
-    <strong>Код курса:</strong> {{ course.code }}<br>
-    <strong>Создан:</strong> {{ course.time_create|date:"d.m.Y H:i" }}<br>
-    <strong>Обновлён:</strong> {{ course.time_update|date:"d.m.Y H:i" }}
-</p>
-
-<hr>
-
-<h2>Описание</h2>
-<p>
-    {{ course.description|default:"Описание пока не добавлено."|linebreaks }}
-</p>
-
-<h2>Теги</h2>
-{% if course.tags.all %}
-    <ul>
-        {% for tag in course.tags.all %}
-            <li>
-                <a href="{% url 'courses_by_tag' tag.slug %}">{{ tag.name }}</a>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>Теги не указаны.</p>
-{% endif %}
-
-<h2>Стоимость</h2>
-<p>
-    Цена: {% format_price course.price %}<br>
-    Статус:
-    {% if course.is_published %}
-        Опубликован
-    {% else %}
-        Черновик
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                    {{ message }}
+                </li>
+            {% endfor %}
+        </ul>
     {% endif %}
-</p>
+    <h1>{{ course.title }}</h1>
 
-<p>
-    <a href="{% url 'home' %}">← На главную</a> |
-    <a href="/admin/core/course/{{ course.id }}/change/" target="_blank">
-        Редактировать в админке
+    {% if course.photo %}
+        <img src="{{ course.photo.url }}" alt="{{ course.title }}" class="course-image">
+    {% endif %}
+
+    <p>
+        <strong>Код курса:</strong> {{ course.code }}<br>
+        <strong>Создан:</strong> {{ course.time_create|date:"d.m.Y H:i" }}<br>
+        <strong>Обновлён:</strong> {{ course.time_update|date:"d.m.Y H:i" }}
+    </p>
+
+    <hr>
+
+    <h2>Описание</h2>
+    <p>
+        {{ course.description|default:"Описание пока не добавлено."|linebreaks }}
+    </p>
+
+    <h2>Теги</h2>
+    {% if course.tags.all %}
+        <ul>
+            {% for tag in course.tags.all %}
+                <li>
+                    <a href="{% url 'courses_by_tag' tag.slug %}">{{ tag.name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Теги не указаны.</p>
+    {% endif %}
+
+    <h2>Стоимость</h2>
+    <p>
+        Цена: {% format_price course.price %}<br>
+        Статус:
+        {% if course.is_published %}
+            Опубликован
+        {% else %}
+            Черновик
+        {% endif %}
+    </p>
+
+    <p>
+        <a href="{% url 'home' %}">← На главную</a> |
+        <a href="/admin/core/course/{{ course.id }}/change/" target="_blank">
+            Редактировать в админке
+        </a>
+    </p>
+    <a href="{% url 'ask_question' course.id %}" class="btn btn-question">Задать вопрос по курсу</a>
+    <a href="{% url 'add_review' course.id %}" class="btn">Оставить отзыв</a>
+    <a href="{% url 'course_edit' slug=course.slug %}" class="btn btn-warning">
+        Редактировать
     </a>
-</p>
-<a href="{% url 'ask_question' course.id %}" class="btn btn-question">Задать вопрос по курсу</a>
-<a href="{% url 'add_review' course.id %}" class="btn">Оставить отзыв</a>
-<a href="{% url 'course_edit' slug=course.slug %}" class="btn btn-warning">
-    Редактировать
-</a>
-<a href="{% url 'course_delete' slug=course.slug %}" class="btn btn-danger">
-    Удалить
-</a>
+    <a href="{% url 'course_delete' slug=course.slug %}" class="btn btn-danger">
+        Удалить
+    </a>
 {% endblock %}

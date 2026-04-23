@@ -1,0 +1,36 @@
+/* Главная страница */
+.home-container {
+    display: flex;
+    gap: 2rem;
+}
+.main-content {
+    flex: 3;
+}
+.sidebar-container {
+    flex: 1;
+    min-width: 250px;
+}
+.welcome-section {
+    text-align: center;
+    padding: 3rem 0;
+    background: linear-gradient(135deg, #3498db, #2c3e50);
+    color: white;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+.subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-top: 0.5rem;
+}
+.features {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+.features li {
+    margin: 0.8rem 0;
+    padding-left: 1rem;
+}
