@@ -1,6 +1,6 @@
 from django import forms
 
-from core.models import CourseReview
+from core.models import CourseReview, Application
 
 
 #  простая несвязанная форма для обратной связи (на почту)
@@ -63,3 +63,16 @@ class ReviewForm(forms.ModelForm):
 
 class UploadFileForm(forms.Form):
     file = forms.FileField(label="Выберите файл")
+
+class ApplicationForm(forms.ModelForm):
+    class Meta:
+        model = Application
+        fields = ['course', 'child_name', 'child_age', 'parent_name', 'parent_phone', 'parent_email']
+        widgets = {
+            'course': forms.Select(attrs={'class': 'form-control'}),
+            'child_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'child_age': forms.NumberInput(attrs={'class': 'form-control'}),
+            'parent_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'parent_phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'parent_email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }

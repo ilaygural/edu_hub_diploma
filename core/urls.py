@@ -1,4 +1,6 @@
 from django.urls import path
+from django.views.generic import TemplateView
+
 from . import views
 
 urlpatterns = [
@@ -17,6 +19,9 @@ urlpatterns = [
     # Other pages
     path('schedule/', views.schedule, name='schedule'),
     path('about/', views.AboutView.as_view(), name='about'),
+    path('application/create/', views.ApplicationCreateView.as_view(), name='application_create'),
+    path('application/done/', TemplateView.as_view(template_name='core/application_done.html'),
+         name='application_done'),
 
     # Tags, questions, reviews (оставляем как есть)
     path('tag/<slug:tag_slug>/', views.courses_by_tag, name='courses_by_tag'),

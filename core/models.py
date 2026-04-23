@@ -136,3 +136,38 @@ class CourseReview(models.Model):
 
 class UploadFiles(models.Model):
     file = models.FileField(upload_to='uploads_model')
+
+
+class Application(models.Model):
+    STATUS_CHOICES = (
+        ('new', 'Новая'),
+        ('approved', 'Одобрена'),
+        ('rejected', 'Отклонена'),
+    )
+
+    course = models.ForeignKey(
+        'Course',
+        on_delete=models.CASCADE,
+        verbose_name='Курс'
+    )
+    child_name = models.CharField(max_length=100, verbose_name='Имя ребёнка')
+    child_age = models.IntegerField(verbose_name='Возраст ребёнка')
+    parent_name = models.CharField(max_length=100, verbose_name='Имя родителя')
+    parent_phone = models.CharField(max_length=20, verbose_name='Телефон')
+    parent_email = models.EmailField(verbose_name='Email родителя')
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='new',
+        verbose_name='Статус'
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата подачи')
+
+    class Meta:
+        verbose_name = 'Заявка'
+        verbose_name_plural = 'Заявки'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.child_name} - {self.course.title} ({self.status})'

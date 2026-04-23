@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
-
-from .models import Course, Tag, CourseReview
+from .models import Course, Tag, CourseReview, Application
 
 
 @admin.action(description="Опубликовать выбранные курсы")
@@ -96,3 +95,11 @@ class CourseReviewAdmin(admin.ModelAdmin):
     @admin.action(description='Опубликовать выбранные отзывы')
     def make_published(self, request, queryset):
         queryset.update(is_published=True)
+
+
+@admin.register(Application)
+class ApplicationAdmin(admin.ModelAdmin):
+    list_display = ['child_name', 'course', 'parent_name', 'parent_phone', 'status', 'created_at']
+    list_filter = ['status', 'course']
+    search_fields = ['child_name', 'parent_name', 'parent_phone', 'parent_email']
+    list_editable = ['status']
