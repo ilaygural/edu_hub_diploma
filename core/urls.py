@@ -27,4 +27,6 @@ urlpatterns = [
     path('tag/<slug:tag_slug>/', views.courses_by_tag, name='courses_by_tag'),
     path('course/<int:course_id>/ask/', views.AskQuestionView.as_view(), name='ask_question'),
     path('course/<int:course_id>/review/', views.AddReviewView.as_view(), name='add_review'),
+    path('parent/dashboard/', views.ParentDashboardView.as_view(), name='parent_dashboard'),
+    path('teacher/dashboard/', views.TeacherDashboardView.as_view(), name='teacher_dashboard'),
 ]

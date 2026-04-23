@@ -6,7 +6,6 @@ from django.utils import timezone
 from accounts.models import Pupil
 
 
-# Create your models here.
 class Group(models.Model):
     """
     Учебная группа
@@ -15,6 +14,14 @@ class Group(models.Model):
     description = models.TextField(blank=True, verbose_name="Описание группы")
     start_date = models.DateField(verbose_name="Дата создание")
     end_date = models.DateField(verbose_name="Дата окончания")
+    course = models.ForeignKey(
+        'core.Course',
+        on_delete=models.CASCADE,
+        related_name='groups',
+        verbose_name='Курс',
+        null=True,  # разрешаем NULL для существующих записей
+        blank=True
+    )
 
     class Status(models.IntegerChoices):
         ACTIVE = 1, 'Активна'

@@ -9,6 +9,9 @@ from accounts.models import Teacher
 from .forms import CourseQuestionForm, ReviewForm, UploadFileForm
 from .mixins import DataMixin
 from .models import Course, Tag, UploadFiles
+from django.views.generic.edit import CreateView
+from .models import Application
+from .forms import ApplicationForm
 
 
 class HomeView(DataMixin, TemplateView):
@@ -195,6 +198,46 @@ class TeacherListView(ListView):
         return context
 
 
+class ParentDashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'core/parent_dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        parent = self.request.user.parent_profile  # связь OneToOne
+        children = parent.children.all()  # все ученики этого родителя
+        context['children'] = children
+        context['title'] = 'Личный кабинет родителя'
+        return context
+
+
+class TeacherDashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'core/teacher_dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if hasattr(self.request.user, 'teacher_profile'):
+            teacher = self.request.user.teacher_profile
+            # Группы, которые ведёт педагог (предполагается, что в модели Schedule есть поле teacher)
+            context['groups'] = teacher.schedule_lessons.all()  # или другая связь
+        else:
+            context['groups'] = []
+            context['error'] = 'У вашего аккаунта нет профиля педагога.'
+        context['title'] = 'Личный кабинет педагога'
+        return context
+
+
+class ApplicationCreateView(CreateView):
+    model = Application
+    form_class = ApplicationForm
+    template_name = 'core/application_form.html'
+    success_url = reverse_lazy('application_done')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Запись на курс'
+        return context
+
+
 # Заглушки пока нужны надо понять связи и удалить
 def schedule(request):
     return render(request, 'core/schedule.html', {'title': 'Расписание'})
@@ -216,18 +259,3 @@ def courses_by_tag(request, tag_slug):
         'page_type': 'tag'
     }
     return render(request, 'core/courses_list.html', context)
-
-from django.views.generic.edit import CreateView
-from .models import Application
-from .forms import ApplicationForm
-
-class ApplicationCreateView(CreateView):
-    model = Application
-    form_class = ApplicationForm
-    template_name = 'core/application_form.html'
-    success_url = reverse_lazy('application_done')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Запись на курс'
-        return context

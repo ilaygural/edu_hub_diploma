@@ -4,8 +4,8 @@
     <h1>Выберите роль</h1>
 
     <ul>
-        <li><a href="{% url 'users:profile' %}">Родитель</a></li>
-        <li><a href="{% url 'users:profile' %}">Педагог</a></li>
+        <li><a href="{% url 'parent_dashboard' %}">Родитель</a></li>
+        <li><a href="{% url 'teacher_dashboard' %}">Педагог</a></li>
         <li><a href="{% url 'users:profile' %}">Менеджер</a></li>
     </ul>
 {% endblock %}

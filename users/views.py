@@ -48,3 +48,4 @@ class RoleSelectView(TemplateView):
         if not request.user.is_authenticated:
             return redirect('application_create')
         return super().dispatch(request, *args, **kwargs)
+

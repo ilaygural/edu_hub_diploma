@@ -1,10 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Личный кабинет родителя</h1>
+
+    {% for child in children %}
+        <div class="child-card">
+            <h3>{{ child.user.get_full_name }}</h3>
+            <p>Дата рождения: {{ child.birth_date|default:"—" }}</p>
+
+            <h4>Курсы:</h4>
+            <ul>
+                {% for enrollment in child.pupil_enrollments.all %}
+                    {% if enrollment.is_active %}
+                        <li>
+                            {{ enrollment.group.course.title }}
+                            (группа: {{ enrollment.group.name }})
+                        </li>
+                    {% endif %}
+                {% empty %}
+                    <li>Нет активных курсов</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% empty %}
+        <p>У вас нет добавленных детей.</p>
+    {% endfor %}
+{% endblock %}

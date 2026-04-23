@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Личный кабинет педагога</h1>
+
+{% if error %}
+    <p style="color: red;">{{ error }}</p>
+{% else %}
+    <h2>Мои группы</h2>
+    <ul>
+        {% for group in groups %}
+            <li>{{ group.group.name}}</li>
+        {% empty %}
+            <li>Нет назначенных групп</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}
