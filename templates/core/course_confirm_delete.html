@@ -12,7 +12,7 @@
     <form method="post">
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">Да, удалить</button>
-        <a href="{% url 'course_detail'  course_slug=object.slug %}" class="btn btn-secondary">Отмена</a>
+        <a href="{% url 'course_detail'  slug=object.slug %}" class="btn btn-secondary">Отмена</a>
     </form>
 </div>
 {% endblock %}

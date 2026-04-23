@@ -63,7 +63,7 @@ class Course(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        return reverse('course_detail', kwargs={'course_slug': self.slug})
+        return reverse('course_detail', kwargs={'slug': self.slug})
 
     def save(self, *args, **kwargs):
         # Если слаг не указан, создаём из названия

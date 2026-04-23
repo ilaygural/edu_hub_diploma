@@ -7,7 +7,7 @@
 
 <form method="post">
     {% csrf_token %}
-
+    <input type="hidden" name="course_id" value="{{ course.id }}">
     {% for f in form %}
     <p>
         <label for="{{ f.id_for_label }}">{{ f.label }}</label>
@@ -23,5 +23,5 @@
 
     <button type="submit">Отправить отзыва</button>
 </form>
-<a href="{% url 'course_detail' course_slug=course.slug %}">← Вернуться к курсу</a>
+<a href="{% url 'course_detail' slug=course.slug %}">← Вернуться к курсу</a>
 {% endblock %}

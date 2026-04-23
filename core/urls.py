@@ -1,23 +1,25 @@
 from django.urls import path
 from . import views
 
-
 urlpatterns = [
     path('', views.HomeView.as_view(), name='home'),
-    path('courses/create/', views.CourseCreateView.as_view(), name='course_create'),
-    path('courses/<slug:slug>/delete/', views.CourseDeleteView.as_view(), name='course_delete'),
-    path('courses/<slug:slug>/edit/', views.CourseUpdateView.as_view(), name='course_edit'),
+
+    # Courses
     path('courses/', views.CourseListView.as_view(), name='courses'),
-    path('courses/<slug:slug>/', views.course_detail_by_slug, name='course_by_slug'),
-    # path('courses/<int:pk>/', views.course_detail, name='course_detail'),
+    path('courses/create/', views.CourseCreateView.as_view(), name='course_create'),
+    path('courses/<slug:slug>/', views.CourseDetailView.as_view(), name='course_detail'),
+    path('courses/<slug:slug>/edit/', views.CourseUpdateView.as_view(), name='course_edit'),
+    path('courses/<slug:slug>/delete/', views.CourseDeleteView.as_view(), name='course_delete'),
+
+    # Teachers
     path('teachers/', views.TeacherListView.as_view(), name='teachers'),
+
+    # Other pages
     path('schedule/', views.schedule, name='schedule'),
     path('about/', views.AboutView.as_view(), name='about'),
-    path('kpi/', views.kpi_dashboard, name='kpi_dashboard'),
-    path('course/<slug:course_slug>/', views.CourseDetailView.as_view(), name='course_detail'),
-    # path('course/', views.courses_list, name='courses_list'),
+
+    # Tags, questions, reviews (оставляем как есть)
     path('tag/<slug:tag_slug>/', views.courses_by_tag, name='courses_by_tag'),
     path('course/<int:course_id>/ask/', views.AskQuestionView.as_view(), name='ask_question'),
     path('course/<int:course_id>/review/', views.AddReviewView.as_view(), name='add_review'),
-
 ]
