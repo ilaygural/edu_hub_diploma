@@ -270,6 +270,11 @@ class ManagerDashboardView(LoginRequiredMixin, ListView):
         else:
             return Application.objects.filter(status='new')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pupils'] = Pupil.objects.all()
+        return context
+
 
 User = get_user_model()
 
@@ -277,7 +282,7 @@ User = get_user_model()
 @login_required
 def approve_application(request, pk):
     app = get_object_or_404(Application, pk=pk)
-
+    password = get_random_string(8)
     # 1. Родитель
     parent_user, parent_created = User.objects.get_or_create(
         username=app.parent_email,
@@ -289,7 +294,7 @@ def approve_application(request, pk):
     )
 
     if parent_created:
-        parent_user.set_password(get_random_string(8))
+        parent_user.set_password(password)
         parent_user.save()
 
     parent, _ = Parent.objects.get_or_create(
@@ -331,7 +336,11 @@ def approve_application(request, pk):
     app.save()
     send_mail(
         subject='Заявка одобрена',
-        message=f'Ваша заявка на курс "{app.course.title}" одобрена.',
+        message=f'Ваша заявка на курс "{app.course.title}" одобрена.\n\n'
+                f'Ваш логин: {app.parent_email}\n'
+                f'Пароль: {password}\n\n'
+                f'Войти в личный кабинет: http://127.0.0.1:8000/users/role-select/',
+
         from_email='admin@edu-hub.ru',
         recipient_list=[app.parent_email],
         fail_silently=True,
@@ -353,6 +362,19 @@ def reject_application(request, pk):
         fail_silently=True,
     )
     messages.warning(request, f'Заявка на курс "{app.course.title}" отклонена.')
+    return redirect('manager_dashboard')
+
+
+def expel_pupil(request, pupil_id):
+    pupil = get_object_or_404(Pupil, id=pupil_id)
+    # Закрываем активное зачисление
+    enrollment = Enrollment.objects.filter(pupil=pupil, date_to__isnull=True).first()
+    if enrollment:
+        enrollment.date_to = timezone.now().date()
+        enrollment.save()
+        messages.success(request, f'Ученик {pupil.user.get_full_name()} отчислен.')
+    else:
+        messages.error(request, 'Активное зачисление не найдено.')
     return redirect('manager_dashboard')
 
 

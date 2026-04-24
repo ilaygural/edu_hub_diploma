@@ -32,4 +32,5 @@ urlpatterns = [
     path('manager/dashboard/', views.ManagerDashboardView.as_view(), name='manager_dashboard'),
     path('application/approve/<int:pk>/', views.approve_application, name='approve_application'),
     path('application/reject/<int:pk>/', views.reject_application, name='reject_application'),
+    path('expel/pupil/<int:pupil_id>/', views.expel_pupil, name='expel_pupil'),
 ]
