@@ -29,4 +29,7 @@ urlpatterns = [
     path('course/<int:course_id>/review/', views.AddReviewView.as_view(), name='add_review'),
     path('parent/dashboard/', views.ParentDashboardView.as_view(), name='parent_dashboard'),
     path('teacher/dashboard/', views.TeacherDashboardView.as_view(), name='teacher_dashboard'),
+    path('manager/dashboard/', views.ManagerDashboardView.as_view(), name='manager_dashboard'),
+    path('application/approve/<int:pk>/', views.approve_application, name='approve_application'),
+    path('application/reject/<int:pk>/', views.reject_application, name='reject_application'),
 ]

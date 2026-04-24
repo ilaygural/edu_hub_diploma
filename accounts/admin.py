@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db.models import Count
 
-from .models import Pupil, Teacher, Parent
+from .models import Pupil, Teacher, Parent, Manager
 from datetime import date
 
 
@@ -55,3 +55,10 @@ class ParentAdmin(admin.ModelAdmin):
     list_display = ['get_full_name', 'phone', 'work_place']
     search_fields = ['user__first_name', 'user__last_name']
     filter_horizontal = ['children']
+
+
+@admin.register(Manager)
+class ManagerAdmin(admin.ModelAdmin):
+    list_display = ['user', 'department', 'position', 'created_at']
+    list_filter = ['department']
+    search_fields = ['user__first_name', 'user__last_name']

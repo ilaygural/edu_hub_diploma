@@ -1,11 +1,17 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.urls import reverse_lazy
+from django.utils import timezone
+from django.utils.crypto import get_random_string
 from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
-from accounts.models import Teacher
+from accounts.models import Teacher, Parent, Pupil
+from schedule.models import Enrollment
 from .forms import CourseQuestionForm, ReviewForm, UploadFileForm
 from .mixins import DataMixin
 from .models import Course, Tag, UploadFiles
@@ -201,6 +207,11 @@ class TeacherListView(ListView):
 class ParentDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'core/parent_dashboard.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not hasattr(request.user, 'parent_profile'):
+            raise PermissionDenied  # или raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         parent = self.request.user.parent_profile  # связь OneToOne
@@ -213,15 +224,16 @@ class ParentDashboardView(LoginRequiredMixin, TemplateView):
 class TeacherDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'core/teacher_dashboard.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not hasattr(request.user, 'teacher_profile'):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if hasattr(self.request.user, 'teacher_profile'):
-            teacher = self.request.user.teacher_profile
-            # Группы, которые ведёт педагог (предполагается, что в модели Schedule есть поле teacher)
-            context['groups'] = teacher.schedule_lessons.all()  # или другая связь
-        else:
-            context['groups'] = []
-            context['error'] = 'У вашего аккаунта нет профиля педагога.'
+        teacher = self.request.user.teacher_profile
+        # Группы, которые ведёт педагог (предполагается, что в модели Schedule есть поле teacher)
+        context['groups'] = teacher.schedule_lessons.all()  # или другая связь
         context['title'] = 'Личный кабинет педагога'
         return context
 
@@ -236,6 +248,112 @@ class ApplicationCreateView(CreateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Запись на курс'
         return context
+
+
+class ManagerDashboardView(LoginRequiredMixin, ListView):
+    model = Application
+    template_name = 'core/manager_dashboard.html'
+    context_object_name = 'applications'
+    paginate_by = 20
+
+    def dispatch(self, request, *args, **kwargs):
+        if not hasattr(request.user, 'manager_profile'):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        filter_by = self.request.GET.get('filter', 'new')
+        if filter_by == 'approved':
+            return Application.objects.filter(status='approved')
+        elif filter_by == 'rejected':
+            return Application.objects.filter(status='rejected')
+        else:
+            return Application.objects.filter(status='new')
+
+
+User = get_user_model()
+
+
+@login_required
+def approve_application(request, pk):
+    app = get_object_or_404(Application, pk=pk)
+
+    # 1. Родитель
+    parent_user, parent_created = User.objects.get_or_create(
+        username=app.parent_email,
+        defaults={
+            'email': app.parent_email,
+            'first_name': app.parent_name.split()[0] if app.parent_name else '',
+            'last_name': app.parent_name.split()[-1] if len(app.parent_name.split()) > 1 else '',
+        }
+    )
+
+    if parent_created:
+        parent_user.set_password(get_random_string(8))
+        parent_user.save()
+
+    parent, _ = Parent.objects.get_or_create(
+        user=parent_user,
+        defaults={'phone': app.parent_phone}
+    )
+
+    # 2. Ученик
+    pupil_username = app.child_name.replace(' ', '_').lower()
+    pupil_user, pupil_created = User.objects.get_or_create(
+        username=pupil_username,
+        defaults={
+            'first_name': app.child_name,
+        }
+    )
+
+    if pupil_created:
+        pupil_user.set_password(get_random_string(8))
+        pupil_user.save()
+
+    pupil, _ = Pupil.objects.get_or_create(
+        user=pupil_user,
+        defaults={'birth_date': None}
+    )
+
+    # 3. Связываем
+    parent.children.add(pupil)
+
+    # 4. Зачисление
+    group = app.course.groups.first()
+    if group:
+        Enrollment.objects.get_or_create(
+            pupil=pupil,
+            group=group,
+            defaults={'date_from': timezone.now().date()}
+        )
+
+    app.status = 'approved'
+    app.save()
+    send_mail(
+        subject='Заявка одобрена',
+        message=f'Ваша заявка на курс "{app.course.title}" одобрена.',
+        from_email='admin@edu-hub.ru',
+        recipient_list=[app.parent_email],
+        fail_silently=True,
+    )
+    messages.success(request, f'Заявка на курс "{app.course.title}" одобрена.')
+    return redirect('manager_dashboard')
+
+
+@login_required
+def reject_application(request, pk):
+    app = get_object_or_404(Application, pk=pk)
+    app.status = 'rejected'
+    app.save()
+    send_mail(
+        subject='Заявка одобрена',
+        message=f'Ваша заявка на курс "{app.course.title}" отклонена.',
+        from_email='admin@edu-hub.ru',
+        recipient_list=[app.parent_email],
+        fail_silently=True,
+    )
+    messages.warning(request, f'Заявка на курс "{app.course.title}" отклонена.')
+    return redirect('manager_dashboard')
 
 
 # Заглушки пока нужны надо понять связи и удалить

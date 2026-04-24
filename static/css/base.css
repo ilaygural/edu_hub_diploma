@@ -86,3 +86,11 @@ main {
     font-size: 0.9em;
     margin-top: 3px;
 }
+
+.warning {
+    color: #856404;
+    background: #fff3cd;
+    padding: 1rem;
+    border-radius: 5px;
+    border-left: 4px solid #ffc107;
+}

@@ -165,3 +165,21 @@ class Parent(models.Model):
         return self.user.get_full_name()
 
     get_full_name.short_description = 'ФИО'
+
+class Manager(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='manager_profile',
+        verbose_name='Пользователь'
+    )
+    department = models.CharField(max_length=100, blank=True, verbose_name='Отдел')
+    position = models.CharField(max_length=100, blank=True, verbose_name='Должность')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Менеджер'
+        verbose_name_plural = 'Менеджеры'
+
+    def __str__(self):
+        return f'{self.user.get_full_name()} (Менеджер)'
