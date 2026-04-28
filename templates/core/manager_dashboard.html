@@ -3,112 +3,115 @@
 {% block content %}
 
     <h1>Панель менеджера — заявки</h1>
-    {% if messages %}
-        <div>
-            {% for message in messages %}
-                <div class="{{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        </div>
-    {% endif %}
-    <a href="?filter=new">Новые</a> |
-    <a href="?filter=approved">Одобренные</a> |
-    <a href="?filter=rejected">Отклонённые</a>
-    <table border="1" cellpadding="8">
-        <thead>
-        <tr>
-            <th>Ребёнок</th>
-            <th>Курс</th>
-            <th>Родитель</th>
-            <th>Телефон</th>
-            <th>Email</th>
-            <th>Статус</th>
-            <th>Действия</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for app in applications %}
-            <tr>
-                <td>{{ app.child_name }} ({{ app.child_age }} лет)</td>
-                <td>{{ app.course.title }}</td>
-                <td>{{ app.parent_name }}</td>
-                <td>{{ app.parent_phone }}</td>
-                <td>{{ app.parent_email }}</td>
-                <td>{{ app.get_status_display }}</td>
-                <td><a href="{% url 'approve_application' app.id %}">Одобрить</a>
-                    <a href="{% url 'reject_application' app.id %}">Отклонить</a></td>
-            </tr>
-        {% empty %}
-            <tr>
-                <td colspan="7">Нет заявок</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    <h2>Список учеников</h2>
-    <table border="1" cellpadding="8">
-        <thead>
-        <tr>
-            <th>ФИО</th>
-            <th>Курс</th>
-            <th>Группа</th>
-            <th>Статус</th>
-            <th>Действия</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for pupil in pupils %}
-            <tr>
-                <td>{{ pupil.user.get_full_name }} ({{ pupil.user.username }})</td>
-                <td>
-                    {% for enrollment in pupil.pupil_enrollments.all %}
-                        {% if enrollment.is_active %}
-                            {{ enrollment.group.course.title }}
-                        {% endif %}
+    <div class="manager-layout">
+        <div class="manager-content">
+            {% if messages %}
+                <div>
+                    {% for message in messages %}
+                        <div class="{{ message.tags }}">{{ message }}</div>
                     {% endfor %}
-                </td>
-                <td>
-                <td>
-                    {% with enrollment=pupil.pupil_enrollments.first %}
-                        {% if enrollment and enrollment.date_to is None %}
-                            Активен
-                        {% else %}
-                            Отчислен
-                        {% endif %}
-                    {% endwith %}
-                </td>
-                </td>
-                <td>
-                    {% if pupil.is_active %}Активен{% else %}Отчислен{% endif %}
-                </td>
-                <td>
-                    {% with enrollment=pupil.pupil_enrollments.first %}
-                        {% if enrollment and enrollment.date_to is None %}
-                            <a href="{% url 'expel_pupil' pupil.id %}">Отчислить</a>
-                        {% else %}
-                            —
-                        {% endif %}
-                    {% endwith %}
-                </td>
-            </tr>
-        {% empty %}
-            <tr>
-                <td colspan="5">Нет учеников</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    <div class="pagination">
-        {% if page_obj.has_previous %}
-            <a href="?page=1">« Первая</a>
-            <a href="?page={{ page_obj.previous_page_number }}">← Предыдущая</a>
-        {% endif %}
+                </div>
+            {% endif %}
+            <a href="?filter=new">Новые</a> |
+            <a href="?filter=approved">Одобренные</a> |
+            <a href="?filter=rejected">Отклонённые</a>
+            <table border="1" cellpadding="8">
+                <thead>
+                <tr>
+                    <th>Ребёнок</th>
+                    <th>Курс</th>
+                    <th>Родитель</th>
+                    <th>Телефон</th>
+                    <th>Email</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for app in applications %}
+                    <tr>
+                        <td>{{ app.child_name }} ({{ app.child_age }} лет)</td>
+                        <td>{{ app.course.title }}</td>
+                        <td>{{ app.parent_name }}</td>
+                        <td>{{ app.parent_phone }}</td>
+                        <td>{{ app.parent_email }}</td>
+                        <td>{{ app.get_status_display }}</td>
+                        <td><a href="{% url 'approve_application' app.id %}">Одобрить</a>
+                            <a href="{% url 'reject_application' app.id %}">Отклонить</a></td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7">Нет заявок</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <h2>Список учеников</h2>
+            <table border="1" cellpadding="8">
+                <thead>
+                <tr>
+                    <th>ФИО</th>
+                    <th>Курс</th>
+                    <th>Группа</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for pupil in pupils %}
+                    <tr>
+                        <td>{{ pupil.user.get_full_name }} ({{ pupil.user.username }})</td>
+                        <td>
+                            {% for enrollment in pupil.pupil_enrollments.all %}
+                                {% if enrollment.is_active %}
+                                    {{ enrollment.group.course.title }}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                        <td>
+                            {% with enrollment=pupil.pupil_enrollments.first %}
+                                {% if enrollment and enrollment.date_to is None %}
+                                    Активен
+                                {% else %}
+                                    Отчислен
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        </td>
+                        <td>
+                            {% if pupil.is_active %}Активен{% else %}Отчислен{% endif %}
+                        </td>
+                        <td>
+                            {% with enrollment=pupil.pupil_enrollments.first %}
+                                {% if enrollment and enrollment.date_to is None %}
+                                    <a href="{% url 'expel_pupil' pupil.id %}">Отчислить</a>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">Нет учеников</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">« Первая</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">← Предыдущая</a>
+                {% endif %}
 
-        <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+                <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
 
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}">Следующая →</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}">Последняя »</a>
-        {% endif %}
-    </div>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">Следующая →</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">Последняя »</a>
+                {% endif %}
+            </div>
+        </div>
 
 {% endblock %}

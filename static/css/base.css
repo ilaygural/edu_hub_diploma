@@ -94,3 +94,61 @@ main {
     border-radius: 5px;
     border-left: 4px solid #ffc107;
 }
+
+.manager-sidebar {
+    width: 250px;
+    background: #2c3e50;
+    color: white;
+    position: fixed;
+    height: 100%;
+    padding: 20px 0;
+}
+
+.manager-sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.manager-sidebar li {
+    padding: 10px 20px;
+}
+
+.manager-sidebar a {
+    color: white;
+    text-decoration: none;
+    display: block;
+}
+
+.manager-sidebar a:hover {
+    background: #3498db;
+    border-radius: 5px;
+}
+
+.main-content {
+    margin-left: 260px;
+    padding: 20px;
+}
+
+.manager-layout {
+    display: flex;
+}
+
+.manager-content {
+    flex: 1;
+    padding: 20px;
+}
+
+.layout {
+    display: flex;
+}
+
+.manager-sidebar {
+    width: 250px;
+    background: #2c3e50;
+    flex-shrink: 0;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+}

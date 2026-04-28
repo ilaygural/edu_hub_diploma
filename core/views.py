@@ -399,3 +399,21 @@ def courses_by_tag(request, tag_slug):
         'page_type': 'tag'
     }
     return render(request, 'core/courses_list.html', context)
+
+def manager_applications(request):
+    return render(request, 'core/manager_applications.html')
+
+def manager_pupils(request):
+    return render(request, 'core/manager_pupils.html')
+
+def manager_groups(request):
+    return render(request, 'core/manager_groups.html')
+
+def manager_schedule(request):
+    return render(request, 'core/manager_schedule.html')
+
+def manager_payments(request):
+    return render(request, 'core/manager_payments.html')
+
+def manager_reports(request):
+    return render(request, 'core/manager_reports.html')
