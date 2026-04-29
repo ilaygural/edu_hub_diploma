@@ -205,7 +205,7 @@ class TeacherListView(ListView):
 
 
 class ParentDashboardView(LoginRequiredMixin, TemplateView):
-    template_name = 'core/parent_dashboard.html'
+    template_name = 'core/parent/dashboard.html'
 
     def dispatch(self, request, *args, **kwargs):
         if not hasattr(request.user, 'parent_profile'):
@@ -222,7 +222,7 @@ class ParentDashboardView(LoginRequiredMixin, TemplateView):
 
 
 class TeacherDashboardView(LoginRequiredMixin, TemplateView):
-    template_name = 'core/teacher_dashboard.html'
+    template_name = 'core/teacher/dashboard.html'
 
     def dispatch(self, request, *args, **kwargs):
         if not hasattr(request.user, 'teacher_profile'):
@@ -252,7 +252,7 @@ class ApplicationCreateView(CreateView):
 
 class ManagerDashboardView(LoginRequiredMixin, ListView):
     model = Application
-    template_name = 'core/manager_dashboard.html'
+    template_name = 'core/manager/dashboard.html'
     context_object_name = 'applications'
     paginate_by = 20
 
@@ -401,19 +401,19 @@ def courses_by_tag(request, tag_slug):
     return render(request, 'core/courses_list.html', context)
 
 def manager_applications(request):
-    return render(request, 'core/manager_applications.html')
+    return render(request, 'core/manager/applications.html')
 
 def manager_pupils(request):
-    return render(request, 'core/manager_pupils.html')
+    return render(request, 'core/manager/pupils.html')
 
 def manager_groups(request):
-    return render(request, 'core/manager_groups.html')
+    return render(request, 'core/manager/groups.html')
 
 def manager_schedule(request):
-    return render(request, 'core/manager_schedule.html')
+    return render(request, 'core/manager/schedule.html')
 
 def manager_payments(request):
-    return render(request, 'core/manager_payments.html')
+    return render(request, 'core/manager/payments.html')
 
 def manager_reports(request):
-    return render(request, 'core/manager_reports.html')
+    return render(request, 'core/manager/reports.html')
