@@ -1,28 +1,39 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Личный кабинет родителя</h1>
+<div class="container">
+    <h1 class="mb-4">Личный кабинет родителя</h1>
 
-    {% for child in children %}
-        <div class="child-card">
-            <h3>{{ child.user.get_full_name }}</h3>
-            <p>Дата рождения: {{ child.birth_date|default:"—" }}</p>
-
-            <h4>Курсы:</h4>
-            <ul>
-                {% for enrollment in child.pupil_enrollments.all %}
-                    {% if enrollment.is_active %}
-                        <li>
-                            {{ enrollment.group.course.title }}
-                            (группа: {{ enrollment.group.name }})
-                        </li>
-                    {% endif %}
-                {% empty %}
-                    <li>Нет активных курсов</li>
-                {% endfor %}
-            </ul>
-        </div>
-    {% empty %}
-        <p>У вас нет добавленных детей.</p>
-    {% endfor %}
+    <div class="row">
+        {% for child in children %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ child.user.get_full_name }}</h5>
+                        <p class="card-text">
+                            <strong>Дата рождения:</strong> {{ child.birth_date|default:"—" }}
+                        </p>
+                        <h6 class="mt-3">Курсы:</h6>
+                        <ul class="list-group list-group-flush">
+                            {% for enrollment in child.pupil_enrollments.all %}
+                                {% if enrollment.is_active %}
+                                    <li class="list-group-item">
+                                        {{ enrollment.group.course.title }}
+                                        <small class="text-muted">(группа: {{ enrollment.group.name }})</small>
+                                    </li>
+                                {% endif %}
+                            {% empty %}
+                                <li class="list-group-item text-muted">Нет активных курсов</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">У вас нет добавленных детей.</div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}

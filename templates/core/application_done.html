@@ -1,7 +1,16 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Заявка отправлена</h1>
-    <p>Спасибо! Мы свяжемся с вами в ближайшее время.</p>
-    <a href="{% url 'home' %}">На главную</a>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="alert alert-success mt-5">
+                <h1 class="alert-heading">Заявка отправлена</h1>
+                <p class="mb-3">Спасибо! Мы свяжемся с вами в ближайшее время.</p>
+                <hr>
+                <a href="{% url 'home' %}" class="btn btn-outline-success">На главную</a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

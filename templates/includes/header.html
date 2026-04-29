@@ -1,35 +1,35 @@
-{% load core_tags %}
-<header>
+<nav class="navbar navbar-expand-lg bg-dark navbar-dark">
     <div class="container">
-        <div class="header-content">
-            <div class="logo">
-                🎓 EduHub
-                <span>Дипломный проект</span>
-            </div>
-            <nav>
-                {% for item in main_menu %}
-                <a href="{% url item.url_name %}"
-                   class="{% if item.active %}active{% endif %}">
-                    {{ item.title }}
-                </a>
-                {% endfor %}
-                {# Разделитель или просто отступ #}
-
+        <a class="navbar-brand" href="{% url 'home' %}">EduHub</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto align-items-center">
                 {% if user.is_authenticated %}
-                <form method="post" action="{% url 'users:logout' %}" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit"
-                            style="background: none; border: none; cursor: pointer; color: inherit; text-decoration: underline; padding-left: 20px;">
-                        Выйти
-                    </button>
-                    <a href="{% url 'users:profile' %}">{{ user.username }}</a>
-                    </button>
-                </form>
+                <li class="nav-item">
+                    <a class="nav-link" href="
+                            {% if user.manager_profile %}
+                                {% url 'manager_dashboard' %}
+                            {% elif user.parent_profile %}
+                                {% url 'parent_dashboard' %}
+                            {% elif user.teacher_profile %}
+                                {% url 'teacher_dashboard' %}
+                            {% endif %}
+                        ">Дашборд</a>
+                </li>
+                <li class="nav-item">
+                    <span class="navbar-text me-2 text-white">{{ user.get_full_name|default:user.username }}</span>
+                </li>
+                <li class="nav-item">
+                    <form method="post" action="{% url 'users:logout' %}">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-light btn-sm">Выйти</button>
+                    </form>
+                </li>
                 {% else %}
-                <a href="{% url 'users:login' %}">Войти</a><a href="{% url 'users:register' %}">Регистрация</a>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'users:login' %}">Войти</a>
+                </li>
                 {% endif %}
-            </nav>
+            </ul>
         </div>
-
     </div>
-</header>
+</nav>

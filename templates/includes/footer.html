@@ -1,42 +1,7 @@
 {% load core_tags %}
-<footer>
+<footer class="bg-light text-center text-muted py-3 mt-4 border-top">
     <div class="container">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>EduHub</h4>
-                <p>CRM для учебного заведения</p>
-                <p>Дипломный проект | Защита: июнь 2026</p>
-            </div>
-
-            <div class="footer-section">
-                <h4>Технологии</h4>
-                <ul>
-                    <li>Django 5.2</li>
-                    <li>Python 3.13</li>
-                    <li>SQLite / PostgreSQL</li>
-                    <li>HTML5 / CSS3</li>
-                </ul>
-            </div>
-
-            <div class="footer-section">
-                <h4>Навигация</h4>
-                <p>
-                    <a href="{% url 'home' %}">Главная</a> |
-                    <a href="{% url 'courses' %}">Курсы</a> |
-                    <a href="{% url 'about' %}">О проекте</a> |
-                    <a href="/admin/">Админка</a>
-                </p>
-                <p>
-                    <a href="https://github.com/ilaygural/edu_hub_diploma" target="_blank">
-                        GitHub репозиторий
-                    </a>
-                </p>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            <p>© {% get_current_year %} EduHub — Система управления учебным заведением</p>
-            <p>Разработка: Илья Гураль | Статус: <span class="status">в разработке</span></p>
-        </div>
+        <p class="mb-0">© {% get_current_year %} EduHub — Система управления учебным заведением</p>
+        <small>Дипломный проект | Разработка: Илья Гураль | Статус: в разработке</small>
     </div>
 </footer>

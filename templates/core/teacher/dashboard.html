@@ -1,18 +1,34 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Личный кабинет педагога</h1>
+<div class="container">
+    <h1 class="mb-4">Личный кабинет педагога</h1>
 
-{% if error %}
-    <p style="color: red;">{{ error }}</p>
-{% else %}
-    <h2>Мои группы</h2>
-    <ul>
-        {% for group in groups %}
-            <li>{{ group.group.name}}</li>
-        {% empty %}
-            <li>Нет назначенных групп</li>
-        {% endfor %}
-    </ul>
-{% endif %}
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% else %}
+        <h2>Мои группы</h2>
+        <div class="row">
+            {% for group in groups %}
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ group.group.name }}</h5>
+                            <p class="card-text">
+                                <strong>Предмет / курс:</strong>
+                                {{ group.group.course.title|default:"—" }}
+                            </p>
+                            <a href="#" class="btn btn-sm btn-outline-primary">Расписание</a>
+                            <a href="#" class="btn btn-sm btn-outline-success">Посещаемость</a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">Нет назначенных групп</div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
 {% endblock %}
