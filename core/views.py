@@ -11,7 +11,7 @@ from django.utils.crypto import get_random_string
 from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
 from accounts.models import Teacher, Parent, Pupil
-from schedule.models import Enrollment
+from schedule.models import Enrollment, Group
 from .forms import CourseQuestionForm, ReviewForm, UploadFileForm
 from .mixins import DataMixin
 from .models import Course, Tag, UploadFiles
@@ -272,7 +272,10 @@ class ManagerDashboardView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['pupils'] = Pupil.objects.all()
+        context['new_applications_count'] = Application.objects.filter(status='new').count()
+        context['active_groups_count'] = Group.objects.filter(status=Group.Status.ACTIVE).count()
+        context['pupils_count'] = Pupil.objects.count()
+        context['recent_applications'] = Application.objects.order_by('-created_at')[:5]
         return context
 
 
@@ -400,20 +403,34 @@ def courses_by_tag(request, tag_slug):
     }
     return render(request, 'core/courses_list.html', context)
 
+
 def manager_applications(request):
-    return render(request, 'core/manager/applications.html')
+    filter_by = request.GET.get('filter', 'new')
+    if filter_by == 'approved':
+        applications = Application.objects.filter(status='approved')
+    elif filter_by == 'rejected':
+        applications = Application.objects.filter(status='rejected')
+    else:
+        applications = Application.objects.filter(status='new')
+    return render(request, 'core/manager/applications.html', {'applications': applications})
+
 
 def manager_pupils(request):
-    return render(request, 'core/manager/pupils.html')
+    pupils = Pupil.objects.all()
+    return render(request, 'core/manager/pupils.html', {'pupils': pupils})
+
 
 def manager_groups(request):
     return render(request, 'core/manager/groups.html')
 
+
 def manager_schedule(request):
     return render(request, 'core/manager/schedule.html')
 
+
 def manager_payments(request):
     return render(request, 'core/manager/payments.html')
+
 
 def manager_reports(request):
     return render(request, 'core/manager/reports.html')

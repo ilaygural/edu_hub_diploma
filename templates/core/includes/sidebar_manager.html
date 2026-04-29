@@ -1,11 +1,26 @@
-<div class="manager-sidebar">
-    <ul>
-        <li><a href="{% url 'manager_dashboard' %}">📊 Дашборд</a></li>
-        <li><a href="{% url 'manager_applications' %}">📋 Заявки (CRM)</a></li>
-        <li><a href="{% url 'manager_pupils' %}">👨‍🎓 Ученики</a></li>
-        <li><a href="{% url 'manager_groups' %}">👥 Группы</a></li>
-        <li><a href="{% url 'manager_schedule' %}">📅 Расписание</a></li>
-        <li><a href="{% url 'manager_payments' %}">💰 Платежи</a></li>
-        <li><a href="{% url 'manager_reports' %}">📈 Отчёты</a></li>
+<div class="bg-dark text-white vh-100 p-3" style="width: 250px;">
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item">
+            <a class="nav-link text-white {% if request.resolver_match.url_name == 'manager_dashboard' %}active{% endif %}"
+               href="{% url 'manager_dashboard' %}">📊 Дашборд</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white" href="{% url 'manager_applications' %}">📋 Заявки (CRM)</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white" href="{% url 'manager_pupils' %}">👨‍🎓 Ученики</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white" href="{% url 'manager_groups' %}">👥 Группы</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white" href="{% url 'manager_schedule' %}">📅 Расписание</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white" href="{% url 'manager_payments' %}">💰 Платежи</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white" href="{% url 'manager_reports' %}">📈 Отчёты</a>
+        </li>
     </ul>
 </div>

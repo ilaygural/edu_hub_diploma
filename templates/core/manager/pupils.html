@@ -1,6 +1,60 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Заявки (CRM)</h1>
-    <p>Страница в разработке</p>
+<div class="container-fluid">
+    <h1 class="mb-4">Список учеников</h1>
+
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+        <tr>
+            <th>ФИО</th>
+            <th>Курс</th>
+            <th>Группа</th>
+            <th>Статус</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for pupil in pupils %}
+            <tr>
+                <td>{{ pupil.user.get_full_name }} ({{ pupil.user.username }})</td>
+                <td>
+                    {% for enrollment in pupil.pupil_enrollments.all %}
+                        {% if enrollment.is_active %}
+                            {{ enrollment.group.course.title }}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for enrollment in pupil.pupil_enrollments.all %}
+                        {% if enrollment.is_active %}
+                            {{ enrollment.group.name }}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>
+                    {% with enrollment=pupil.pupil_enrollments.first %}
+                        {% if enrollment and enrollment.date_to is None %}
+                            Активен
+                        {% else %}
+                            Отчислен
+                        {% endif %}
+                    {% endwith %}
+                </td>
+                <td>
+                    {% with enrollment=pupil.pupil_enrollments.first %}
+                        {% if enrollment and enrollment.date_to is None %}
+                            <a href="{% url 'expel_pupil' pupil.id %}" class="btn btn-sm btn-warning">Отчислить</a>
+                        {% else %}
+                            —
+                        {% endif %}
+                    {% endwith %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">Нет учеников</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

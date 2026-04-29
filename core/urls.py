@@ -39,4 +39,6 @@ urlpatterns = [
     path('manager/schedule/', views.manager_schedule, name='manager_schedule'),
     path('manager/payments/', views.manager_payments, name='manager_payments'),
     path('manager/reports/', views.manager_reports, name='manager_reports'),
+    path('manager/applications/', views.manager_applications, name='manager_applications'),
+    path('manager/pupils/', views.manager_pupils, name='manager_pupils'),
 ]

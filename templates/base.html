@@ -13,16 +13,20 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100">
+    {% include 'includes/header.html' %}
 
-{% include 'includes/header.html' %}
-
-<main class="flex-grow-1">
-    <div class="container my-4">
-        {% block content %}{% endblock %}
+    <div class="d-flex flex-grow-1">
+        {% if user.manager_profile %}
+            {% include 'core/includes/sidebar_manager.html' %}
+        {% endif %}
+        <main class="flex-grow-1">
+            <div class="container my-4">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
     </div>
-</main>
 
-{% include 'includes/footer.html' %}
+    {% include 'includes/footer.html' %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
