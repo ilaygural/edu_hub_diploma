@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from django.views.generic import TemplateView, RedirectView
 
 from . import views
@@ -41,4 +41,6 @@ urlpatterns = [
     path('manager/reports/', views.manager_reports, name='manager_reports'),
     path('manager/applications/', views.manager_applications, name='manager_applications'),
     path('manager/pupils/', views.manager_pupils, name='manager_pupils'),
+    path('schedule/', include('schedule.urls')),
+    path('save-attendance/', views.save_attendance, name='save_attendance'),
 ]

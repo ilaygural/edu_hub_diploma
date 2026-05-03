@@ -56,3 +56,7 @@ def show_status_badge():
         'status': 'в разработке',
         'color': 'danger'  # danger, warning, success, info
     }
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)

@@ -11,13 +11,15 @@ from django.utils.crypto import get_random_string
 from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
 from accounts.models import Teacher, Parent, Pupil
-from schedule.models import Enrollment, Group
+from schedule.models import Enrollment, Group, Schedule
 from .forms import CourseQuestionForm, ReviewForm, UploadFileForm
 from .mixins import DataMixin
 from .models import Course, Tag, UploadFiles
 from django.views.generic.edit import CreateView
 from .models import Application
 from .forms import ApplicationForm
+from schedule.models import Group, Schedule, Attendance
+from accounts.models import Pupil
 
 
 class HomeView(DataMixin, TemplateView):
@@ -207,35 +209,86 @@ class TeacherListView(ListView):
 class ParentDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'core/parent/dashboard.html'
 
-    def dispatch(self, request, *args, **kwargs):
-        if not hasattr(request.user, 'parent_profile'):
-            raise PermissionDenied  # или raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        parent = self.request.user.parent_profile  # связь OneToOne
-        children = parent.children.all()  # все ученики этого родителя
-        context['children'] = children
-        context['title'] = 'Личный кабинет родителя'
+        parent = self.request.user.parent_profile
+        children = parent.children.all()
+
+        children_data = []
+        for child in children:
+            enrollments = child.pupil_enrollments.filter(date_to__isnull=True)
+            for enrollment in enrollments:
+                enrollment.schedule_list = Schedule.objects.filter(
+                    group=enrollment.group,
+                    status='approved'
+                ).order_by('weekday', 'start_time')
+            children_data.append({
+                'child': child,
+                'enrollments': enrollments
+            })
+
+        context['children_data'] = children_data
         return context
 
 
 class TeacherDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'core/teacher/dashboard.html'
 
-    def dispatch(self, request, *args, **kwargs):
-        if not hasattr(request.user, 'teacher_profile'):
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         teacher = self.request.user.teacher_profile
-        # Группы, которые ведёт педагог (предполагается, что в модели Schedule есть поле teacher)
-        context['groups'] = teacher.schedule_lessons.all()  # или другая связь
-        context['title'] = 'Личный кабинет педагога'
+
+        # Получаем все курсы преподавателя
+        courses = Course.objects.filter(teachers=teacher)
+        courses_with_groups = {}
+
+        for course in courses:
+            # Группы этого курса, у которых есть утверждённые занятия с этим педагогом
+            groups = Group.objects.filter(
+                course=course,
+                lessons__teacher=teacher,
+                lessons__status='approved'
+            ).distinct()
+            if groups:
+                courses_with_groups[course] = groups
+
+        context['courses_with_groups'] = courses_with_groups
         return context
+
+
+
+@login_required
+def save_attendance(request):
+    if request.method == 'POST':
+        group_id = request.POST.get('group_id')
+        if not group_id:
+            return redirect('teacher_dashboard')
+
+        for key, status_str in request.POST.items():
+            if key.startswith('attendance_'):
+                parts = key.split('_')
+                if len(parts) != 3:
+                    continue
+                pupil_id = parts[1]
+                lesson_date = parts[2]
+
+                # Преобразуем строку статуса в число
+                if status_str == 'present':
+                    status = 1
+                elif status_str == 'absent':
+                    status = 0
+                elif status_str == 'late':
+                    status = 2
+                else:
+                    continue
+
+                Attendance.objects.update_or_create(
+                    pupil_id=pupil_id,
+                    lesson_date=lesson_date,
+                    defaults={'status': status}
+                )
+        return redirect(f'{request.path}?group={group_id}')
+    return redirect('teacher_dashboard')
 
 
 class ApplicationCreateView(CreateView):

@@ -49,6 +49,12 @@ class Group(models.Model):
         return self.group_enrollments.filter(date_to__isnull=True).count()
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'course'],
+                name='unique_group_per_course'
+            )
+        ]
         verbose_name = "Учебная группа"
         verbose_name_plural = "Учебные группы"
         ordering = ['-start_date']
@@ -134,6 +140,25 @@ class Schedule(models.Model):
     """
     Конкретное занятие группы в определенное время
     """
+    WEEKDAYS = (
+        ('monday', 'Понедельник'),
+        ('tuesday', 'Вторник'),
+        ('wednesday', 'Среда'),
+        ('thursday', 'Четверг'),
+        ('friday', 'Пятница'),
+        ('saturday', 'Суббота'),
+    )
+    weekday = models.CharField(max_length=10, choices=WEEKDAYS, null=True, blank=True, verbose_name='День недели')
+
+    STATUS_CHOICES = (
+        ('draft', 'Черновик'),
+        ('pending', 'На согласовании'),
+        ('approved', 'Утверждено'),
+        ('rejected', 'Отклонено'),
+    )
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    room = models.CharField(max_length=50, blank=True, verbose_name='Кабинет')
     group = models.ForeignKey(
         Group,
         on_delete=models.CASCADE,
@@ -177,6 +202,31 @@ class Schedule(models.Model):
         indexes = [
             models.Index(fields=['-lesson_date']),  # Для быстрой сортировки
         ]
+
+
+class ScheduleProposal(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'На согласовании'),
+        ('approved', 'Утверждено'),
+        ('rejected', 'Отклонено'),
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
+    # Данные от педагога
+    course_name = models.CharField(max_length=200, verbose_name='Название направления')
+    group_name = models.CharField(max_length=100, verbose_name='Название группы')
+    weekday1 = models.CharField(max_length=10, choices=Schedule.WEEKDAYS, verbose_name='Первый день недели')
+    weekday2 = models.CharField(max_length=10, choices=Schedule.WEEKDAYS, verbose_name='Второй день недели')
+    start_time = models.TimeField(verbose_name='Время начала')
+    end_time = models.TimeField(verbose_name='Время окончания')
+    room = models.CharField(max_length=50, blank=True, verbose_name='Кабинет')
+
+    teacher = models.ForeignKey('accounts.Teacher', on_delete=models.CASCADE, verbose_name='Педагог')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Заявка на расписание'
+        verbose_name_plural = 'Заявки на расписание'
 
 
 class Payment(models.Model):

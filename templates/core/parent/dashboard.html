@@ -5,27 +5,37 @@
     <h1 class="mb-4">Личный кабинет родителя</h1>
 
     <div class="row">
-        {% for child in children %}
+        {% for item in children_data %}
             <div class="col-md-6 mb-4">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h5 class="card-title">{{ child.user.get_full_name }}</h5>
+                        <h5 class="card-title">{{ item.child.user.get_full_name }}</h5>
                         <p class="card-text">
-                            <strong>Дата рождения:</strong> {{ child.birth_date|default:"—" }}
+                            <strong>Дата рождения:</strong> {{ item.child.birth_date|default:"—" }}
                         </p>
-                        <h6 class="mt-3">Курсы:</h6>
-                        <ul class="list-group list-group-flush">
-                            {% for enrollment in child.pupil_enrollments.all %}
-                                {% if enrollment.is_active %}
-                                    <li class="list-group-item">
-                                        {{ enrollment.group.course.title }}
-                                        <small class="text-muted">(группа: {{ enrollment.group.name }})</small>
-                                    </li>
+
+                        <h6 class="mt-3">Курсы и расписание:</h6>
+                        {% for enrollment in item.enrollments %}
+                            <div class="border rounded p-2 mb-2">
+                                <strong>{{ enrollment.group.course.title }}</strong>
+                                (группа {{ enrollment.group.name }})
+
+                                {% if enrollment.schedule_list %}
+                                    <ul class="list-group list-group-flush mt-2">
+                                        {% for lesson in enrollment.schedule_list %}
+                                            <li class="list-group-item">
+                                                {{ lesson.get_weekday_display }} |
+                                                {{ lesson.start_time|time:"H:i" }}–{{ lesson.end_time|time:"H:i" }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p class="text-muted mt-2">Расписание пока не добавлено</p>
                                 {% endif %}
-                            {% empty %}
-                                <li class="list-group-item text-muted">Нет активных курсов</li>
-                            {% endfor %}
-                        </ul>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted">Нет активных курсов</p>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
