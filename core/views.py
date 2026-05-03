@@ -236,25 +236,69 @@ class TeacherDashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         teacher = self.request.user.teacher_profile
 
-        # Получаем все курсы преподавателя
-        courses = Course.objects.filter(teachers=teacher)
-        courses_with_groups = {}
+        groups = teacher.groups.all()
 
-        for course in courses:
-            # Группы этого курса, у которых есть утверждённые занятия с этим педагогом
-            groups = Group.objects.filter(
-                course=course,
-                lessons__teacher=teacher,
-                lessons__status='approved'
-            ).distinct()
-            if groups:
-                courses_with_groups[course] = groups
-
-        context['courses_with_groups'] = courses_with_groups
+        context['groups'] = groups
         return context
 
+
+class TeacherGroupDetailView(DetailView):
+    model = Group
+    template_name = 'core/teacher/group_detail.html'
+    context_object_name = 'group'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        group = self.object
+
+        context['pupils'] = group.group_enrollments.filter(
+            date_to__isnull=True
+        ).select_related('pupil')
+
+        context['lessons'] = group.lessons.all().order_by('-lesson_date')
+
+        return context
+
+
+class LessonDetailView(DetailView):
+    model = Schedule
+    template_name = 'core/teacher/lesson_detail.html'
+    context_object_name = 'lesson'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        lesson = self.object
+
+        # ученики группы
+        context['pupils'] = lesson.group.group_enrollments.filter(
+            date_to__isnull=True
+        ).select_related('pupil')
+
+        # уже отмеченные посещения
+        context['attendances'] = Attendance.objects.filter(lesson=lesson)
+
+        return context
+
+
+def post(self, request, *args, **kwargs):
+    lesson = self.get_object()
+
+    for key, value in request.POST.items():
+        if key.startswith('pupil_'):
+            pupil_id = key.replace('pupil_', '')
+
+            Attendance.objects.update_or_create(
+                lesson=lesson,
+                pupil_id=pupil_id,
+                defaults={'status': value}
+            )
+
+    return redirect('teacher_group_detail', pk=lesson.group.id)
 
 
 @login_required

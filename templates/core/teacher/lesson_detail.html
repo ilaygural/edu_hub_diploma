@@ -1,0 +1,29 @@
+<h2>Занятие: {{ lesson.group.name }}</h2>
+
+<p>{{ lesson.lesson_date }} {{ lesson.start_time }}</p>
+
+<hr>
+
+<h3>👥 Отметка посещаемости</h3>
+
+<form method="post">
+    {% csrf_token %}
+
+    <table>
+        {% for e in pupils %}
+        <tr>
+            <td>{{ e.pupil.user.get_full_name }}</td>
+
+            <td>
+                <select name="pupil_{{ e.pupil.id }}">
+                    <option value="1">Присутствовал</option>
+                    <option value="0">Отсутствовал</option>
+                    <option value="2">Опоздал</option>
+                </select>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <button type="submit">Сохранить</button>
+</form>

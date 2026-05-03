@@ -2,6 +2,7 @@ from django.urls import path, include
 from django.views.generic import TemplateView, RedirectView
 
 from . import views
+from .views import TeacherGroupDetailView
 
 urlpatterns = [
     # path('', views.HomeView.as_view(), name='home'),
@@ -43,4 +44,11 @@ urlpatterns = [
     path('manager/pupils/', views.manager_pupils, name='manager_pupils'),
     path('schedule/', include('schedule.urls')),
     path('save-attendance/', views.save_attendance, name='save_attendance'),
+    path('teacher/group/<int:pk>/', TeacherGroupDetailView.as_view(), name='teacher_group_detail'),
+    path(
+        'teacher/lesson/<int:pk>/',
+        views.LessonDetailView.as_view(),
+        name='lesson_detail'
+    )
+
 ]

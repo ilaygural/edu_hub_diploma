@@ -1,0 +1,22 @@
+<h3>Ученики</h3>
+<ul>
+    {% for e in pupils %}
+        <li>{{ e.pupil.user.get_full_name }}</li>
+    {% empty %}
+        <li>Нет учеников</li>
+    {% endfor %}
+</ul>
+
+<h3>Занятия</h3>
+<ul>
+    {% for lesson in lessons %}
+        <li>
+            <a href="{% url 'lesson_detail' lesson.id %}">
+                {{ lesson.lesson_date }} {{ lesson.start_time }}
+            </a>
+            <span>→ (пока без посещаемости)</span>
+        </li>
+    {% empty %}
+        <li>Нет занятий</li>
+    {% endfor %}
+</ul>

@@ -1,31 +1,12 @@
-{% extends 'base.html' %}
+<h2>Мои группы</h2>
 
-{% block content %}
-<div class="row">
-    <div class="col-md-3">
-        <div class="list-group">
-            <a href="#" class="list-group-item list-group-item-action active">Мои группы</a>
-            <a href="#" class="list-group-item list-group-item-action">Журнал</a>
-            <a href="#" class="list-group-item list-group-item-action">Материалы</a>
-        </div>
+{% for group in groups %}
+    <div>
+        <a href="{% url 'teacher_group_detail' group.id %}">
+            {{ group.name }}
+        </a>
     </div>
+{% empty %}
+    <p>Нет групп</p>
 
-    <div class="col-md-9">
-        <h2>Мои группы</h2>
-        {% for course, groups in courses_with_groups.items %}
-            <div class="card mt-3">
-                <div class="card-header bg-secondary text-white">
-                    <strong>{{ course.title }}</strong>
-                </div>
-                <ul class="list-group list-group-flush">
-                    {% for group in groups %}
-                        <li class="list-group-item">{{ group.name }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% empty %}
-            <div class="alert alert-info">У вас пока нет утверждённых групп.</div>
-        {% endfor %}
-    </div>
-</div>
-{% endblock %}
+{% endfor %}

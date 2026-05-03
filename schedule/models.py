@@ -12,6 +12,12 @@ class Group(models.Model):
     """
     name = models.CharField(max_length=100, verbose_name="Название группы")
     description = models.TextField(blank=True, verbose_name="Описание группы")
+    teacher = models.ForeignKey(
+        'accounts.Teacher',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='groups'
+    )
     start_date = models.DateField(verbose_name="Дата создание")
     end_date = models.DateField(verbose_name="Дата окончания")
     course = models.ForeignKey(
@@ -97,16 +103,19 @@ class Enrollment(models.Model):
 
 
 class Attendance(models.Model):
-    """
-    Посещаемость
-    """
+    lesson = models.ForeignKey(
+        'Schedule',
+        on_delete=models.CASCADE,
+        related_name='attendances',
+        verbose_name='Занятие'
+    )
+
     pupil = models.ForeignKey(
         Pupil,
         on_delete=models.CASCADE,
         related_name='attendances',
         verbose_name='Ученик'
     )
-    lesson_date = models.DateField(verbose_name='Дата занятий')
 
     class Status(models.IntegerChoices):
         PRESENT = 1, 'Присутствовал'
@@ -115,25 +124,15 @@ class Attendance(models.Model):
 
     status = models.IntegerField(
         choices=Status.choices,
-        default=Status.PRESENT,
-        verbose_name='Статус'
-    )
-    notes = models.TextField(
-        blank=True,
-        verbose_name='Примечания'
+        default=Status.PRESENT
     )
 
-    def __str__(self):
-        return f"{self.pupil} - {self.lesson_date}: {self.get_status_display()}"
-
-    @property
-    def is_present(self):
-        return True if self.status == self.Status.PRESENT or self.status == self.Status.LATE else False
+    notes = models.TextField(blank=True)
 
     class Meta:
+        unique_together = ('lesson', 'pupil')
         verbose_name = "Посещаемость"
         verbose_name_plural = "Посещаемости"
-        ordering = ['-lesson_date']
 
 
 class Schedule(models.Model):
