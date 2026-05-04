@@ -1,12 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+
 <h2>Мои группы</h2>
 
-{% for group in groups %}
-    <div>
-        <a href="{% url 'teacher_group_detail' group.id %}">
-            {{ group.name }}
-        </a>
-    </div>
-{% empty %}
-    <p>Нет групп</p>
-
+{% for g in groups %}
+    <div>{{ g.name }}</div>
 {% endfor %}
+
+{% endblock %}

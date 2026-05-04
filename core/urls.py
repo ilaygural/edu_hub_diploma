@@ -45,10 +45,7 @@ urlpatterns = [
     path('schedule/', include('schedule.urls')),
     path('save-attendance/', views.save_attendance, name='save_attendance'),
     path('teacher/group/<int:pk>/', TeacherGroupDetailView.as_view(), name='teacher_group_detail'),
-    path(
-        'teacher/lesson/<int:pk>/',
-        views.LessonDetailView.as_view(),
-        name='lesson_detail'
-    )
+    path('teacher/lesson/<int:pk>/', views.LessonDetailView.as_view(), name='lesson_detail'),
+    path('teacher/journal/', views.JournalView.as_view(), name='teacher_journal'),
 
 ]

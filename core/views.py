@@ -239,7 +239,9 @@ class TeacherDashboardView(LoginRequiredMixin, TemplateView):
 
         teacher = self.request.user.teacher_profile
 
-        groups = teacher.groups.all()
+        groups = Group.objects.filter(
+            lessons__teacher=teacher
+        ).distinct()
 
         context['groups'] = groups
         return context
@@ -275,30 +277,95 @@ class LessonDetailView(DetailView):
         lesson = self.object
 
         # ученики группы
-        context['pupils'] = lesson.group.group_enrollments.filter(
+        pupils = Enrollment.objects.filter(
+            group=lesson.group,
             date_to__isnull=True
-        ).select_related('pupil')
+        )
 
-        # уже отмеченные посещения
-        context['attendances'] = Attendance.objects.filter(lesson=lesson)
+        context['pupils'] = pupils
+
+        # существующие отметки
+        attendances = Attendance.objects.filter(lesson=lesson)
+
+        # делаем словарь: pupil_id → attendance
+        context['attendance_dict'] = {
+            a.pupil_id: a for a in attendances
+        }
 
         return context
 
+    def post(self, request, *args, **kwargs):
+        lesson = self.get_object()
 
-def post(self, request, *args, **kwargs):
-    lesson = self.get_object()
+        pupils = Enrollment.objects.filter(
+            group=lesson.group,
+            date_to__isnull=True
+        )
 
-    for key, value in request.POST.items():
-        if key.startswith('pupil_'):
-            pupil_id = key.replace('pupil_', '')
+        for enrollment in pupils:
+            pupil = enrollment.pupil
+
+            status = request.POST.get(f'status_{pupil.id}')
+
+            if status is None:
+                continue
 
             Attendance.objects.update_or_create(
                 lesson=lesson,
-                pupil_id=pupil_id,
-                defaults={'status': value}
+                pupil=pupil,
+                defaults={'status': int(status)}
             )
 
-    return redirect('teacher_group_detail', pk=lesson.group.id)
+        return redirect('lesson_detail', pk=lesson.id)
+
+class JournalView(LoginRequiredMixin, TemplateView):
+    template_name = 'core/teacher/journal.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        teacher = self.request.user.teacher_profile
+
+        course_id = self.request.GET.get('course')
+        group_id = self.request.GET.get('group')
+
+        # 1. Курсы педагога
+        courses = Course.objects.filter(
+            groups__lessons__teacher=teacher
+        ).distinct()
+
+        context['courses'] = courses
+        context['selected_course'] = None
+        context['groups'] = []
+        context['selected_group'] = None
+        context['lessons'] = []
+
+        # 2. Если выбран курс
+        if course_id:
+            selected_course = courses.filter(id=course_id).first()
+            context['selected_course'] = selected_course
+
+            groups = Group.objects.filter(
+                course=selected_course,
+                lessons__teacher=teacher
+            ).distinct()
+
+            context['groups'] = groups
+
+        # 3. Если выбрана группа
+        if group_id:
+            selected_group = Group.objects.filter(id=group_id).first()
+            context['selected_group'] = selected_group
+
+            lessons = Schedule.objects.filter(
+                group=selected_group,
+                teacher=teacher,
+                status='approved'
+            ).order_by('lesson_date')
+
+            context['lessons'] = lessons
+
+        return context
 
 
 @login_required

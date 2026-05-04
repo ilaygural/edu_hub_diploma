@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Журнал</h2>
+
+<!-- 1. Курсы -->
+<h4>Курсы</h4>
+
+{% for c in courses %}
+    <a href="?course={{ c.id }}" class="btn btn-outline-primary mb-2">
+        {{ c.title }}
+    </a>
+{% endfor %}
+
+<hr>
+
+<!-- 2. Группы -->
+{% if selected_course %}
+
+    <h4>Группы</h4>
+
+    {% for g in groups %}
+        <a href="?course={{ selected_course.id }}&group={{ g.id }}"
+           class="btn btn-outline-secondary mb-2">
+            {{ g.name }}
+        </a>
+    {% empty %}
+        <p>Нет групп</p>
+    {% endfor %}
+
+{% endif %}
+
+<hr>
+
+<!-- 3. Занятия -->
+{% if selected_group %}
+
+    <h4>Занятия группы {{ selected_group.name }}</h4>
+
+    {% for l in lessons %}
+        <div class="card mb-2 p-2">
+            <a href="{% url 'lesson_detail' l.id %}">
+                {{ l.lesson_date }} | {{ l.start_time }} - {{ l.end_time }}
+            </a>
+        </div>
+    {% empty %}
+        <p>Нет занятий</p>
+    {% endfor %}
+
+{% endif %}
+
+{% endblock %}
