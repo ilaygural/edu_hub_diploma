@@ -266,57 +266,40 @@ class TeacherGroupDetailView(DetailView):
         return context
 
 
-class LessonDetailView(DetailView):
+class LessonDetailView(LoginRequiredMixin, DetailView):
     model = Schedule
-    template_name = 'core/teacher/lesson_detail.html'
-    context_object_name = 'lesson'
+    template_name = "core/teacher/lesson_detail.html"
+    context_object_name = "schedule"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        lesson = self.object
+        schedule = self.object  # ❗ ВАЖНО
 
-        # ученики группы
-        pupils = Enrollment.objects.filter(
-            group=lesson.group,
-            date_to__isnull=True
+        pupils = (
+            schedule.group
+            .group_enrollments
+            .select_related('pupil__user')
         )
 
         context['pupils'] = pupils
 
-        # существующие отметки
-        attendances = Attendance.objects.filter(lesson=lesson)
-
-        # делаем словарь: pupil_id → attendance
-        context['attendance_dict'] = {
-            a.pupil_id: a for a in attendances
-        }
-
         return context
 
     def post(self, request, *args, **kwargs):
-        lesson = self.get_object()
+        schedule = self.get_object()
 
-        pupils = Enrollment.objects.filter(
-            group=lesson.group,
-            date_to__isnull=True
-        )
+        for key, value in request.POST.items():
+            if key.startswith("status_"):
+                pupil_id = key.split("_")[1]
 
-        for enrollment in pupils:
-            pupil = enrollment.pupil
+                Attendance.objects.update_or_create(
+                    schedule=schedule,
+                    pupil_id=pupil_id,
+                    defaults={"status": value}
+                )
 
-            status = request.POST.get(f'status_{pupil.id}')
-
-            if status is None:
-                continue
-
-            Attendance.objects.update_or_create(
-                lesson=lesson,
-                pupil=pupil,
-                defaults={'status': int(status)}
-            )
-
-        return redirect('lesson_detail', pk=lesson.id)
+        return redirect(request.path)
 
 class JournalView(LoginRequiredMixin, TemplateView):
     template_name = 'core/teacher/journal.html'

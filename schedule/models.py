@@ -103,11 +103,12 @@ class Enrollment(models.Model):
 
 
 class Attendance(models.Model):
-    lesson = models.ForeignKey(
+    schedule = models.ForeignKey(
         'Schedule',
         on_delete=models.CASCADE,
         related_name='attendances',
-        verbose_name='Занятие'
+        null=True,   # ВАЖНО
+        blank=True   # ВАЖНО
     )
 
     pupil = models.ForeignKey(
@@ -124,13 +125,17 @@ class Attendance(models.Model):
 
     status = models.IntegerField(
         choices=Status.choices,
-        default=Status.PRESENT
+        default=Status.PRESENT,
+        verbose_name='Статус'
     )
 
     notes = models.TextField(blank=True)
 
+    # ❗ ВРЕМЕННО ОСТАВЛЯЕМ
+    lesson_date = models.DateField(null=True, blank=True)
+
     class Meta:
-        unique_together = ('lesson', 'pupil')
+        # unique_together = ('lesson', 'pupil')
         verbose_name = "Посещаемость"
         verbose_name_plural = "Посещаемости"
 

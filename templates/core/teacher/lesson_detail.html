@@ -1,35 +1,19 @@
-<h2>Занятие: {{ lesson.lesson_date }}</h2>
-
 <form method="post">
     {% csrf_token %}
 
-    <ul>
-        {% for e in pupils %}
-            <li>
-                {{ e.pupil.user.get_full_name }}
+    {% for e in pupils %}
+        <div class="mb-2">
+            <strong>{{ e.pupil.user.get_full_name }}</strong>
 
-                <select name="status_{{ e.pupil.id }}">
-                    <option value="1"
-                        {% if attendance_dict.e.pupil.id and attendance_dict.e.pupil.id.status == 1 %}
-                            selected
-                        {% endif %}
-                    >✔ Присутствовал</option>
+            <select name="status_{{ e.pupil.id }}" class="form-select w-auto d-inline-block">
+                <option value="1">Присутствовал</option>
+                <option value="0">Отсутствовал</option>
+                <option value="2">Опоздал</option>
+            </select>
+        </div>
+    {% endfor %}
 
-                    <option value="0"
-                        {% if attendance_dict.e.pupil.id and attendance_dict.e.pupil.id.status == 0 %}
-                            selected
-                        {% endif %}
-                    >❌ Отсутствовал</option>
-
-                    <option value="2"
-                        {% if attendance_dict.e.pupil.id and attendance_dict.e.pupil.id.status == 2 %}
-                            selected
-                        {% endif %}
-                    >⏰ Опоздал</option>
-                </select>
-            </li>
-        {% endfor %}
-    </ul>
-
-    <button type="submit">Сохранить</button>
+    <button type="submit" class="btn btn-primary mt-3">
+    Сохранить
+</button>
 </form>

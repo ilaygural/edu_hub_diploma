@@ -50,8 +50,8 @@ class EnrollmentAdmin(admin.ModelAdmin):
 # admin.site.register(Attendance)
 @admin.register(Attendance)
 class AttendanceAdmin(admin.ModelAdmin):
-    list_display = ['pupil', 'lesson', 'status']
-    list_filter = ['status', 'lesson']
+    list_display = ['pupil', 'schedule', 'status']
+    list_filter = ['status', 'schedule__group']
     search_fields = ['pupil__user__last_name']
     # Убираем N+1 по pupil->user
     list_select_related = ('pupil__user',)
