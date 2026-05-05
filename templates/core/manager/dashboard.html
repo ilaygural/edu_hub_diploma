@@ -1,61 +1,69 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container-fluid">
-    <h1 class="mb-4">Дашборд</h1>
+    <div class="container-fluid">
+        <h1 class="mb-4">Дашборд</h1>
 
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card text-white bg-primary">
-                <div class="card-body">
-                    <h5 class="card-title">Новых заявок</h5>
-                    <p class="card-text display-4">{{ new_applications_count }}</p>
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary">
+                    <div class="card-body">
+                        <h5 class="card-title">Новых заявок</h5>
+                        <p class="card-text display-4">{{ new_applications_count }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h5 class="card-title">Активных групп</h5>
+                        <p class="card-text display-4">{{ active_groups_count }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-warning">
+                    <div class="card-body">
+                        <h5 class="card-title">Учеников</h5>
+                        <p class="card-text display-4">{{ pupils_count }}</p>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card text-white bg-success">
-                <div class="card-body">
-                    <h5 class="card-title">Активных групп</h5>
-                    <p class="card-text display-4">{{ active_groups_count }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-white bg-warning">
-                <div class="card-body">
-                    <h5 class="card-title">Учеников</h5>
-                    <p class="card-text display-4">{{ pupils_count }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <h3>Последние заявки</h3>
-    <table class="table table-striped">
-        <thead>
+        <h3>Последние заявки</h3>
+        <table class="table table-striped">
+            <thead>
             <tr>
                 <th>Ребёнок</th>
                 <th>Курс</th>
                 <th>Статус</th>
                 <th>Действия</th>
             </tr>
-        </thead>
-        <tbody>
+            </thead>
+            <tbody>
             {% for app in recent_applications %}
-            <tr>
-                <td>{{ app.child_name }} ({{ app.child_age }})</td>
-                <td>{{ app.course.title }}</td>
-                <td>{{ app.get_status_display }}</td>
-                <td>
-                    <a href="{% url 'approve_application' app.id %}" class="btn btn-sm btn-success">Одобрить</a>
-                    <a href="{% url 'reject_application' app.id %}" class="btn btn-sm btn-danger">Отклонить</a>
-                </td>
-            </tr>
+                <tr>
+                    <td>{{ app.child_name }} ({{ app.child_age }})</td>
+                    <td>{{ app.course.title }}</td>
+                    <td>{{ app.get_status_display }}</td>
+                    <td>
+                        {% if app.status == 'new' %}
+                            <a href="{% url 'approve_application' app.id %}" class="btn btn-sm btn-success">Одобрить</a>
+                            <a href="{% url 'reject_application' app.id %}" class="btn btn-sm btn-danger">Отклонить</a>
+                        {% elif app.status == 'approved' %}
+                            <span class="badge bg-success">Одобрена</span>
+                        {% elif app.status == 'rejected' %}
+                            <span class="badge bg-danger">Отклонена</span>
+                        {% endif %}
+                    </td>
+                </tr>
             {% empty %}
-            <tr><td colspan="4">Нет заявок</td></tr>
+                <tr>
+                    <td colspan="4">Нет заявок</td>
+                </tr>
             {% endfor %}
-        </tbody>
-    </table>
-</div>
+            </tbody>
+        </table>
+    </div>
 {% endblock %}

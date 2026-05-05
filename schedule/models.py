@@ -135,7 +135,12 @@ class Attendance(models.Model):
     lesson_date = models.DateField(null=True, blank=True)
 
     class Meta:
-        # unique_together = ('lesson', 'pupil')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['schedule', 'pupil'],
+                name='unique_attendance_per_schedule_pupil'
+            )
+        ]
         verbose_name = "Посещаемость"
         verbose_name_plural = "Посещаемости"
 

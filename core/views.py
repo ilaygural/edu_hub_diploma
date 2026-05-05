@@ -450,7 +450,7 @@ class ManagerDashboardView(LoginRequiredMixin, ListView):
         context['new_applications_count'] = Application.objects.filter(status='new').count()
         context['active_groups_count'] = Group.objects.filter(status=Group.Status.ACTIVE).count()
         context['pupils_count'] = Pupil.objects.count()
-        context['recent_applications'] = Application.objects.order_by('-created_at')[:5]
+        context['recent_applications'] = Application.objects.filter(status='new').order_by('-created_at')[:5]
         return context
 
 
