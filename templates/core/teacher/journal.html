@@ -1,38 +1,68 @@
 {% extends "base.html" %}
-
+{% load core_tags %}
 {% block content %}
 
     <h3>Журнал</h3>
-
-    <!-- выбор группы -->
     <form method="get" class="mb-3">
-        <select name="group" onchange="this.form.submit()" class="form-select w-25">
-            <option value="">Выберите группу</option>
-
-            {% for g in groups %}
-                <option value="{{ g.id }}" {% if g.id|stringformat:"s" == request.GET.group %}selected{% endif %}>
-                    {{ g.course.title }} — {{ g.name }}
-                </option>
-            {% endfor %}
-        </select>
-    </form>
-    {% if lessons %}
-        <h5>Занятия</h5>
-
-        {% for lesson in lessons %}
-            <a href="?group={{ selected_group.id }}&lesson={{ lesson.id }}"
-               class="d-block">
-                {{ lesson.lesson_date }} ({{ lesson.start_time }})
-            </a>
-        {% endfor %}
-    {% endif %}
-    {% if pupils %}
-        <h5 class="mt-3">Посещаемость</h5>
-
-        {% for e in pupils %}
-            <div>
-                {{ e.pupil.user.get_full_name }}
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Группа</label>
+                <select name="group" class="form-select" onchange="this.form.submit()">
+                    <option value="">Выберите группу</option>
+                    {% for g in groups %}
+                        <option value="{{ g.id }}"
+                                {% if selected_group and g.id == selected_group.id %}selected{% endif %}>
+                            {{ g.course.title }} — {{ g.name }}
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
-        {% endfor %}
+            {% if lessons %}
+                <div class="col-md-4">
+                    <label class="form-label">Занятие</label>
+                    <select name="lesson" class="form-select" onchange="this.form.submit()">
+                        <option value="">Выберите занятие</option>
+                        {% for lesson in lessons %}
+                            <option value="{{ lesson.id }}"
+                                    {% if selected_lesson and lesson.id == selected_lesson.id %}selected{% endif %}>
+                                {{ lesson.lesson_date }} ({{ lesson.start_time }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+        </div>
+    </form>
+    {% if selected_lesson and enrollments %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="group_id" value="{{ selected_group.id }}">
+            <input type="hidden" name="lesson_id" value="{{ selected_lesson.id }}">
+            <table class="table table-bordered align-middle bg-white">
+                <thead>
+                <tr>
+                    <th>Ученик</th>
+                    <th style="width: 260px;">Статус</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for e in enrollments %}
+                    {% with current=attendance_map|get_item:e.pupil.id %}
+                        <tr>
+                            <td>{{ e.pupil.user.get_full_name }}</td>
+                            <td>
+                                <select class="form-select" name="status_{{ e.pupil.id }}">
+                                    <option value="1" {% if current == 1 %}selected{% endif %}>Присутствовал</option>
+                                    <option value="0" {% if current == 0 %}selected{% endif %}>Отсутствовал</option>
+                                    <option value="2" {% if current == 2 %}selected{% endif %}>Опоздал</option>
+                                </select>
+                            </td>
+                        </tr>
+                    {% endwith %}
+                {% endfor %}
+                </tbody>
+            </table>
+            <button class="btn btn-success" type="submit">Сохранить</button>
+        </form>
     {% endif %}
 {% endblock %}

@@ -302,39 +302,65 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
         return redirect(request.path)
 
 
-class TeacherJournalView(TemplateView):
+class TeacherJournalView(LoginRequiredMixin, TemplateView):
     template_name = 'core/teacher/journal.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not hasattr(request.user, 'teacher_profile'):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def _get_teacher_groups(self):
+        teacher = self.request.user.teacher_profile
+        return Group.objects.filter(teacher=teacher).select_related('course')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        teacher = self.request.user.teacher_profile
-
-        # все группы педагога
-        groups = Group.objects.filter(teacher=teacher)
+        groups = self._get_teacher_groups()
         context['groups'] = groups
-
         group_id = self.request.GET.get('group')
         lesson_id = self.request.GET.get('lesson')
-
-        # 👉 если выбрана группа
-        if group_id:
-            selected_group = groups.filter(id=group_id).first()
-            context['selected_group'] = selected_group
-
-            if selected_group:
-                lessons = selected_group.lessons.all()
-                context['lessons'] = lessons
-
-        # 👉 если выбрано занятие
-        if lesson_id:
-            lesson = Schedule.objects.filter(id=lesson_id).first()
-
-            if lesson:
-                pupils = lesson.group.group_enrollments.select_related('pupil__user')
-                context['pupils'] = pupils
-
+        selected_group = groups.filter(id=group_id).first() if group_id else None
+        context['selected_group'] = selected_group
+        if selected_group:
+            lessons = selected_group.lessons.order_by('-lesson_date', 'start_time')
+            context['lessons'] = lessons
+            selected_lesson = lessons.filter(id=lesson_id).first() if lesson_id else None
+            context['selected_lesson'] = selected_lesson
+            if selected_lesson:
+                enrollments = selected_group.group_enrollments.filter(
+                    date_to__isnull=True
+                ).select_related('pupil__user')
+                attendance_qs = Attendance.objects.filter(schedule=selected_lesson)
+                attendance_map = {a.pupil_id: a.status for a in attendance_qs}
+                context['enrollments'] = enrollments
+                context['attendance_map'] = attendance_map
         return context
+
+    def post(self, request, *args, **kwargs):
+        groups = self._get_teacher_groups()
+        group_id = request.POST.get('group_id')
+        lesson_id = request.POST.get('lesson_id')
+        selected_group = groups.filter(id=group_id).first()
+        if not selected_group:
+            messages.error(request, 'Группа не найдена или недоступна.')
+            return redirect('teacher_journal')
+        lesson = get_object_or_404(Schedule, id=lesson_id, group=selected_group)
+        enrollments = selected_group.group_enrollments.filter(date_to__isnull=True).select_related('pupil')
+        valid_pupil_ids = {e.pupil_id for e in enrollments}
+        for key, value in request.POST.items():
+            if not key.startswith('status_'):
+                continue
+            pupil_id = int(key.split('_')[1])
+            if pupil_id not in valid_pupil_ids:
+                continue
+            Attendance.objects.update_or_create(
+                schedule=lesson,
+                pupil_id=pupil_id,
+                defaults={'status': int(value)}
+            )
+        messages.success(request, 'Посещаемость сохранена.')
+        return redirect(f"{request.path}?group={group_id}&lesson={lesson_id}")
 
 
 class TeacherLessonView(DetailView):
