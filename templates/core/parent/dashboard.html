@@ -2,8 +2,12 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="mb-4">Личный кабинет родителя</h1>
-
+    <div class="d-flex justify-content-between align-item-center mb-4">
+        <h1 class="mb-0">Личный кабинет родителя</h1>
+        <a href="{% url 'parent_profile_edit' %}" class="btn btn-primary">
+            Заполнить данные для договора
+        </a>
+    </div>
     <div class="row">
         {% for item in children_data %}
             <div class="col-md-6 mb-4">

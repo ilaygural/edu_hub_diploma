@@ -47,6 +47,7 @@ urlpatterns = [
     path('teacher/group/<int:pk>/', TeacherGroupDetailView.as_view(), name='teacher_group_detail'),
     path('teacher/lesson/<int:pk>/', views.LessonDetailView.as_view(), name='lesson_detail'),
     path('teacher/journal/', views.TeacherJournalView.as_view(), name='teacher_journal'),
-    path('teacher/lesson/<int:pk>/', TeacherLessonView.as_view(), name='teacher_lesson')
+    path('teacher/lesson/<int:pk>/', TeacherLessonView.as_view(), name='teacher_lesson'),
+    path('parent/profile/edit/', views.ParentProfileUpdateView.as_view(), name='parent_profile_edit'),
 
 ]

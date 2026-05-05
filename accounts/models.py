@@ -146,6 +146,8 @@ class Parent(models.Model):
     phone = models.CharField(max_length=20, blank=True, verbose_name='Телефон')
     work_place = models.CharField(max_length=200, blank=True, verbose_name='Место работы')
     additional_contacts = models.TextField(blank=True, verbose_name="Дополнительные контакты")
+    address = models.CharField(max_length=255, blank=True, verbose_name='Домашний адрес')
+    passport = models.TextField(blank=True, verbose_name='Паспортные данные')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

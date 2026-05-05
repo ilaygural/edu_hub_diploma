@@ -1,5 +1,6 @@
 from django import forms
 
+from accounts.models import Parent
 from core.models import CourseReview, Application
 
 
@@ -27,7 +28,6 @@ class CourseQuestionForm(forms.Form):
         widget=forms.Textarea(attrs={"class": "form-control", "rows": "5"})
     )
 
-
     def clean_question(self):
         question = self.cleaned_data['question']
         forbidden = ['http', 'www.', 'спам', 'реклама', 'бесплатно']
@@ -39,6 +39,7 @@ class CourseQuestionForm(forms.Form):
                 )
 
         return question
+
 
 class ReviewForm(forms.ModelForm):
     class Meta:
@@ -61,8 +62,10 @@ class ReviewForm(forms.ModelForm):
             self.fields['name'].required = False
             self.fields['email'].required = False
 
+
 class UploadFileForm(forms.Form):
     file = forms.FileField(label="Выберите файл")
+
 
 class ApplicationForm(forms.ModelForm):
     class Meta:
@@ -76,3 +79,47 @@ class ApplicationForm(forms.ModelForm):
             'parent_phone': forms.TextInput(attrs={'class': 'form-control'}),
             'parent_email': forms.EmailInput(attrs={'class': 'form-control'}),
         }
+
+
+class ParentProfileForm(forms.ModelForm):
+    first_name = forms.CharField(label='Имя', required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    last_name = forms.CharField(label='Фамилия', required=False,
+                                widget=forms.TextInput(attrs={'class': 'form-control'}))
+
+    class Meta:
+        model = Parent
+        fields = [
+            'first_name', 'last_name',
+            'phone', 'work_place', 'additional_contacts', 'address', 'passport'
+        ]
+        labels = {
+            'phone': 'Телефон',
+            'work_place': 'Место работы',
+            'additional_contacts': 'Дополнительные контакты',
+            'address': 'Домашний адрес',
+            'passport': 'Паспортные данные',
+        }
+        widgets = {
+            'phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'work_place': forms.TextInput(attrs={'class': 'form-control'}),
+            'additional_contacts': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'address': forms.TextInput(attrs={'class': 'form-control'}),
+            'passport': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.user_id:
+            self.fields['first_name'].initial = self.instance.user.first_name
+            self.fields['last_name'].initial = self.instance.user.last_name
+
+    def save(self, commit=True):
+        parent = super().save(commit=False)
+        user = parent.user
+        user.first_name = self.cleaned_data.get('first_name', '')
+        user.last_name = self.cleaned_data.get('last_name', '')
+        if commit:
+            user.save()
+            parent.save()
+            self.save_m2m()
+        return parent

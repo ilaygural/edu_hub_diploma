@@ -12,7 +12,7 @@ from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
 from accounts.models import Teacher, Parent, Pupil
 from schedule.models import Enrollment, Group, Schedule
-from .forms import CourseQuestionForm, ReviewForm, UploadFileForm
+from .forms import CourseQuestionForm, ReviewForm, UploadFileForm, ParentProfileForm
 from .mixins import DataMixin
 from .models import Course, Tag, UploadFiles
 from django.views.generic.edit import CreateView
@@ -229,6 +229,25 @@ class ParentDashboardView(LoginRequiredMixin, TemplateView):
 
         context['children_data'] = children_data
         return context
+
+
+class ParentProfileUpdateView(LoginRequiredMixin, UpdateView):
+    model = Parent
+    form_class = ParentProfileForm
+    template_name = 'core/parent/profile_edit.html'
+    success_url = reverse_lazy('parent_dashboard')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not hasattr(request.user, 'parent_profile'):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return self.request.user.parent_profile
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Данные профиля сохранены.')
+        return super().form_valid(form)
 
 
 class TeacherDashboardView(LoginRequiredMixin, TemplateView):
