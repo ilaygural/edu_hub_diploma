@@ -1,25 +1,17 @@
-<div class="bg-light border-end p-3" style="width: 220px; min-height: 100vh;">
-    <h6 class="mb-3">Панель педагога</h6>
+<div class="bg-white border-end p-3" style="width: 260px;">
 
-    <ul class="nav flex-column">
+    <h5 class="mb-3">Меню</h5>
 
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'teacher_dashboard' %}">
-                Мои группы
-            </a>
-        </li>
+    <a href="{% url 'teacher_dashboard' %}" class="d-block mb-2">
+        Мои группы
+    </a>
 
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'teacher_journal' %}">
-                Журнал
-            </a>
-        </li>
+    <a href="{% url 'teacher_journal' %}" class="d-block mb-2">
+        Журнал
+    </a>
 
-        <li class="nav-item">
-            <a class="nav-link" href="#">
-                Материалы
-            </a>
-        </li>
+    <a href="#" class="d-block mb-2">
+        Материалы
+    </a>
 
-    </ul>
 </div>

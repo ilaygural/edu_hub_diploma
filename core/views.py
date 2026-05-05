@@ -301,7 +301,8 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
 
         return redirect(request.path)
 
-class JournalView(LoginRequiredMixin, TemplateView):
+
+class TeacherJournalView(TemplateView):
     template_name = 'core/teacher/journal.html'
 
     def get_context_data(self, **kwargs):
@@ -309,45 +310,46 @@ class JournalView(LoginRequiredMixin, TemplateView):
 
         teacher = self.request.user.teacher_profile
 
-        course_id = self.request.GET.get('course')
+        # все группы педагога
+        groups = Group.objects.filter(teacher=teacher)
+        context['groups'] = groups
+
         group_id = self.request.GET.get('group')
+        lesson_id = self.request.GET.get('lesson')
 
-        # 1. Курсы педагога
-        courses = Course.objects.filter(
-            groups__lessons__teacher=teacher
-        ).distinct()
-
-        context['courses'] = courses
-        context['selected_course'] = None
-        context['groups'] = []
-        context['selected_group'] = None
-        context['lessons'] = []
-
-        # 2. Если выбран курс
-        if course_id:
-            selected_course = courses.filter(id=course_id).first()
-            context['selected_course'] = selected_course
-
-            groups = Group.objects.filter(
-                course=selected_course,
-                lessons__teacher=teacher
-            ).distinct()
-
-            context['groups'] = groups
-
-        # 3. Если выбрана группа
+        # 👉 если выбрана группа
         if group_id:
-            selected_group = Group.objects.filter(id=group_id).first()
+            selected_group = groups.filter(id=group_id).first()
             context['selected_group'] = selected_group
 
-            lessons = Schedule.objects.filter(
-                group=selected_group,
-                teacher=teacher,
-                status='approved'
-            ).order_by('lesson_date')
+            if selected_group:
+                lessons = selected_group.lessons.all()
+                context['lessons'] = lessons
 
-            context['lessons'] = lessons
+        # 👉 если выбрано занятие
+        if lesson_id:
+            lesson = Schedule.objects.filter(id=lesson_id).first()
 
+            if lesson:
+                pupils = lesson.group.group_enrollments.select_related('pupil__user')
+                context['pupils'] = pupils
+
+        return context
+
+
+class TeacherLessonView(DetailView):
+    model = Schedule
+    template_name = 'core/teacher/lesson_detail.html'
+    context_object_name = 'schedule'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        schedule = self.object
+
+        pupils = schedule.group.group_enrollments.select_related('pupil__user')
+
+        context['pupils'] = pupils
         return context
 
 

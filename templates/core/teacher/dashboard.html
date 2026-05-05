@@ -2,10 +2,34 @@
 
 {% block content %}
 
-<h2>Мои группы</h2>
+    <h3>Мои группы</h3>
 
-{% for g in groups %}
-    <div>{{ g.name }}</div>
-{% endfor %}
+    {% regroup groups by course as course_list %}
+
+    {% for course in course_list %}
+        <div class="mb-4">
+            <h5>{{ course.grouper.title }}</h5>
+
+            {% for group in course.list %}
+                <div class="card mb-2 p-2 d-flex justify-content-between">
+
+                    <div>
+                        <strong>{{ group.name }}</strong><br>
+                        <small>
+                            Учеников: {{ group.active_pupils_count }}
+                        </small>
+                    </div>
+
+                    <div>
+                        <a href="{% url 'teacher_journal' %}?group={{ group.id }}"
+                           class="btn btn-sm btn-primary">
+                            Журнал
+                        </a>
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
 
 {% endblock %}

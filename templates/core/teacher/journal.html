@@ -2,52 +2,37 @@
 
 {% block content %}
 
-<h2>Журнал</h2>
+    <h3>Журнал</h3>
 
-<!-- 1. Курсы -->
-<h4>Курсы</h4>
+    <!-- выбор группы -->
+    <form method="get" class="mb-3">
+        <select name="group" onchange="this.form.submit()" class="form-select w-25">
+            <option value="">Выберите группу</option>
 
-{% for c in courses %}
-    <a href="?course={{ c.id }}" class="btn btn-outline-primary mb-2">
-        {{ c.title }}
-    </a>
-{% endfor %}
+            {% for g in groups %}
+                <option value="{{ g.id }}" {% if g.id|stringformat:"s" == request.GET.group %}selected{% endif %}>
+                    {{ g.course.title }} — {{ g.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+    {% if lessons %}
+        <h5>Занятия</h5>
 
-<hr>
-
-<!-- 2. Группы -->
-{% if selected_course %}
-
-    <h4>Группы</h4>
-
-    {% for g in groups %}
-        <a href="?course={{ selected_course.id }}&group={{ g.id }}"
-           class="btn btn-outline-secondary mb-2">
-            {{ g.name }}
-        </a>
-    {% empty %}
-        <p>Нет групп</p>
-    {% endfor %}
-
-{% endif %}
-
-<hr>
-
-<!-- 3. Занятия -->
-{% if selected_group %}
-
-    <h4>Занятия группы {{ selected_group.name }}</h4>
-
-    {% for l in lessons %}
-        <div class="card mb-2 p-2">
-            <a href="{% url 'lesson_detail' l.id %}">
-                {{ l.lesson_date }} | {{ l.start_time }} - {{ l.end_time }}
+        {% for lesson in lessons %}
+            <a href="?group={{ selected_group.id }}&lesson={{ lesson.id }}"
+               class="d-block">
+                {{ lesson.lesson_date }} ({{ lesson.start_time }})
             </a>
-        </div>
-    {% empty %}
-        <p>Нет занятий</p>
-    {% endfor %}
+        {% endfor %}
+    {% endif %}
+    {% if pupils %}
+        <h5 class="mt-3">Посещаемость</h5>
 
-{% endif %}
-
+        {% for e in pupils %}
+            <div>
+                {{ e.pupil.user.get_full_name }}
+            </div>
+        {% endfor %}
+    {% endif %}
 {% endblock %}
