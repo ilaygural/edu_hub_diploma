@@ -41,6 +41,8 @@ class Group(models.Model):
     )
 
     def __str__(self):
+        if self.course:
+            return f"{self.course.title} — {self.name}"
         return self.name
 
     def get_active_pupils(self):

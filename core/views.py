@@ -261,8 +261,13 @@ class TeacherDashboardView(LoginRequiredMixin, TemplateView):
         groups = Group.objects.filter(
             lessons__teacher=teacher
         ).distinct()
-
+        lessons = (
+            Schedule.objects.filter(teacher=teacher)
+            .select_related('group__course')
+            .order_by('lesson_date', 'start_time')[:15]
+        )
         context['groups'] = groups
+        context['upcoming_lessons'] = lessons
         return context
 
 
@@ -619,7 +624,20 @@ def manager_groups(request):
 
 
 def manager_schedule(request):
-    return render(request, 'core/manager/schedule.html')
+    group_id = request.GET.get('group')
+    schedules = (
+        Schedule.objects
+        .select_related('group__course', 'teacher__user')
+        .order_by('-lesson_date', 'start_time')
+    )
+    if group_id:
+        schedules = schedules.filter(group_id=group_id)
+    groups = Group.objects.select_related('course').order_by('course__title', 'name')
+    return render(request, 'core/manager/schedule.html', {
+        'schedules': schedules,
+        'groups': groups,
+        'selected_group_id': str(group_id) if group_id else '',
+    })
 
 
 def manager_payments(request):
