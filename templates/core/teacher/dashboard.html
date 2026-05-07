@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-    <h3>Мои группы</h3>
+    <h3 class="mb-3">Мои группы</h3>
 
     {% regroup groups by course as course_list %}
 
@@ -12,24 +11,62 @@
 
             {% for group in course.list %}
                 <div class="card mb-2 p-2 d-flex justify-content-between">
-
                     <div>
                         <strong>{{ group.name }}</strong><br>
-                        <small>
-                            Учеников: {{ group.active_pupils_count }}
-                        </small>
+                        <small>Учеников: {{ group.active_pupils_count }}</small>
                     </div>
 
                     <div>
-                        <a href="{% url 'teacher_journal' %}?group={{ group.id }}"
-                           class="btn btn-sm btn-primary">
+                        <a href="{% url 'teacher_journal' %}?group={{ group.id }}" class="btn btn-sm btn-primary">
                             Журнал
                         </a>
                     </div>
-
                 </div>
             {% endfor %}
         </div>
+    {% empty %}
+        <div class="alert alert-light border">У вас пока нет групп.</div>
     {% endfor %}
 
+    <hr class="my-4">
+
+    <h3 class="mb-3">Ближайшие занятия</h3>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <table class="table table-striped mb-0">
+                <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Время</th>
+                    <th>Направление</th>
+                    <th>Группа</th>
+                    <th>Кабинет</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for lesson in upcoming_lessons %}
+                    <tr>
+                        <td>{{ lesson.lesson_date|date:"d.m.Y" }}</td>
+                        <td>{{ lesson.start_time|time:"H:i" }} - {{ lesson.end_time|time:"H:i" }}</td>
+                        <td>{{ lesson.group.course.title }}</td>
+                        <td>{{ lesson.group.name }}</td>
+                        <td>{{ lesson.room|default:"—" }}</td>
+                        <td>
+                            <a href="{% url 'teacher_journal' %}?group={{ lesson.group.id }}&lesson={{ lesson.id }}"
+                               class="btn btn-sm btn-outline-primary">
+                                Открыть в журнале
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">Ближайших занятий нет</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 {% endblock %}

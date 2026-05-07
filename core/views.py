@@ -645,4 +645,28 @@ def manager_payments(request):
 
 
 def manager_reports(request):
-    return render(request, 'core/manager/reports.html')
+    new_count = Application.objects.filter(status='new').count()
+    approved_count = Application.objects.filter(status='approved').count()
+    rejected_count = Application.objects.filter(status='rejected').count()
+    active_groups_count = Group.objects.filter(status=Group.Status.ACTIVE).count()
+
+    recent_applications = (
+        Application.objects
+        .select_related('course')
+        .order_by('-created_at')[:10]
+    )
+
+    groups_stats = (
+        Group.objects
+        .select_related('course', 'teacher__user')
+        .order_by('course__title', 'name')[:15]
+    )
+
+    return render(request, 'core/manager/reports.html', {
+        'new_count': new_count,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'active_groups_count': active_groups_count,
+        'recent_applications': recent_applications,
+        'groups_stats': groups_stats,
+    })

@@ -1,6 +1,108 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Заявки (CRM)</h1>
-    <p>Страница в разработке</p>
+    <div class="container-fluid">
+        <h1 class="mb-4">Отчеты</h1>
+
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-primary">
+                    <div class="card-body">
+                        <h6 class="card-title">Новые заявки</h6>
+                        <p class="display-6 mb-0">{{ new_count }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h6 class="card-title">Одобренные</h6>
+                        <p class="display-6 mb-0">{{ approved_count }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-danger">
+                    <div class="card-body">
+                        <h6 class="card-title">Отклоненные</h6>
+                        <p class="display-6 mb-0">{{ rejected_count }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-secondary">
+                    <div class="card-body">
+                        <h6 class="card-title">Активные группы</h6>
+                        <p class="display-6 mb-0">{{ active_groups_count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Последние заявки</strong></div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Ребенок</th>
+                        <th>Курс</th>
+                        <th>Статус</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for app in recent_applications %}
+                        <tr>
+                            <td>{{ app.created_at|date:"d.m.Y H:i" }}</td>
+                            <td>{{ app.child_name }}</td>
+                            <td>{{ app.course.title }}</td>
+                            <td>{{ app.get_status_display }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">Заявок пока нет</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><strong>Группы (сводно)</strong></div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                    <tr>
+                        <th>Направление</th>
+                        <th>Группа</th>
+                        <th>Педагог</th>
+                        <th>Активных учеников</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for g in groups_stats %}
+                        <tr>
+                            <td>{{ g.course.title }}</td>
+                            <td>{{ g.name }}</td>
+                            <td>
+                                {% if g.teacher %}
+                                    {{ g.teacher.user.get_full_name|default:g.teacher.user.username }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>{{ g.active_pupils_count }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">Групп пока нет</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 {% endblock %}
