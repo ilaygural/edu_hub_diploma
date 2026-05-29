@@ -1,18 +1,195 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container" style="max-width: 760px;">
-    <h1 class="mb-4">Данные для договора</h1>
+<div class="container" style="max-width: 920px;">
+    <h1 class="mb-2">Данные для договора</h1>
+    <p class="text-muted mb-4">
+        Поля соответствуют шаблону договора ITCUBE (образование по доп. программам).
+        После одобрения заявки заполните данные законного представителя и обучающегося.
+    </p>
 
-    <form method="post" class="card card-body">
+    <form method="post">
         {% csrf_token %}
 
-        <div class="mb-3">
-            {{ form.as_p }}
+        <div class="card mb-4">
+            <div class="card-header">
+                <strong>Родитель (законный представитель)</strong>
+                <span class="text-muted small"> — раздел подписи в договоре</span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">{{ parent_form.representative_relation.label }}</label>
+                    {{ parent_form.representative_relation }}
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ parent_form.last_name.label }} *</label>
+                        {{ parent_form.last_name }}
+                        {{ parent_form.last_name.errors }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ parent_form.first_name.label }} *</label>
+                        {{ parent_form.first_name }}
+                        {{ parent_form.first_name.errors }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ parent_form.patronymic.label }} *</label>
+                        {{ parent_form.patronymic }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ parent_form.email.label }} *</label>
+                        {{ parent_form.email }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ parent_form.phone.label }} *</label>
+                        {{ parent_form.phone }}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ parent_form.address.label }} *</label>
+                    {{ parent_form.address }}
+                    <div class="form-text">В договоре: «Домашний адрес»</div>
+                </div>
+                <p class="small text-muted mb-2">Паспорт (для ПФДО и договора, п. 2.5):</p>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">{{ parent_form.passport_series.label }}</label>
+                        {{ parent_form.passport_series }}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">{{ parent_form.passport_number.label }}</label>
+                        {{ parent_form.passport_number }}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">{{ parent_form.passport_issued_date.label }}</label>
+                        {{ parent_form.passport_issued_date }}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">{{ parent_form.snils.label }}</label>
+                        {{ parent_form.snils }}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ parent_form.passport_issued_by.label }}</label>
+                    {{ parent_form.passport_issued_by }}
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ parent_form.work_place.label }}</label>
+                        {{ parent_form.work_place }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ parent_form.additional_contacts.label }}</label>
+                        {{ parent_form.additional_contacts }}
+                    </div>
+                </div>
+            </div>
         </div>
+
+        {% for item in child_forms %}
+            {% with child_form=item.form enrollment=item.enrollment %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <strong>Обучающийся</strong>
+                    {% if item.child.user.get_full_name %} — {{ item.child.user.get_full_name }}{% endif %}
+                </div>
+                <div class="card-body">
+                    {% if enrollment %}
+                        <div class="alert alert-light border mb-3 py-2">
+                            <strong>Обучение (из заявки):</strong>
+                            {{ enrollment.course_title }}, группа «{{ enrollment.group_name }}»,
+                            направленность: {{ enrollment.direction }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ child_form.pfdo_certificate_number.label }}</label>
+                        {{ child_form.pfdo_certificate_number }}
+                        <div class="form-text">П. 2.5 договора: номер сертификата ПФДО (если есть)</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ child_form.last_name.label }} *</label>
+                            {{ child_form.last_name }}
+                            {{ child_form.last_name.errors }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ child_form.first_name.label }} *</label>
+                            {{ child_form.first_name }}
+                            {{ child_form.first_name.errors }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ child_form.patronymic.label }}</label>
+                            {{ child_form.patronymic }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ child_form.birth_date.label }} *</label>
+                            {{ child_form.birth_date }}
+                            {{ child_form.birth_date.errors }}
+                        </div>
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">{{ child_form.place_of_birth.label }}</label>
+                            {{ child_form.place_of_birth }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="form-label d-block">{{ child_form.identity_document_type.label }} *</span>
+                        {% for radio in child_form.identity_document_type %}
+                            <div class="form-check form-check-inline">
+                                {{ radio.tag }}
+                                <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ child_form.birth_certificate.label }}</label>
+                        {{ child_form.birth_certificate }}
+                        {{ child_form.birth_certificate.errors }}
+                    </div>
+
+                    <p class="small text-muted mb-2">Если у ребёнка паспорт (вместо свидетельства):</p>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">{{ child_form.passport_series.label }}</label>
+                            {{ child_form.passport_series }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">{{ child_form.passport_number.label }}</label>
+                            {{ child_form.passport_number }}
+                            {{ child_form.passport_number.errors }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">{{ child_form.passport_issued_date.label }}</label>
+                            {{ child_form.passport_issued_date }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">{{ child_form.snils.label }}</label>
+                            {{ child_form.snils }}
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label">{{ child_form.passport_issued_by.label }}</label>
+                        {{ child_form.passport_issued_by }}
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+        {% empty %}
+            <div class="alert alert-info">
+                Дети ещё не привязаны. После одобрения заявки данные обучающегося появятся здесь.
+            </div>
+        {% endfor %}
+
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">Сохранить</button>
-            <a href="{% url 'parent_dashboard' %}" class="btn btn-outline-secondary">Отмена</a>
+            <a href="{% url 'parent_dashboard' %}" class="btn btn-outline-secondary">На главную</a>
         </div>
     </form>
 </div>

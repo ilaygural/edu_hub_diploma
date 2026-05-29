@@ -30,7 +30,10 @@ class HasParentFilter(admin.SimpleListFilter):
 
 @admin.register(Pupil)
 class PupilAdmin(admin.ModelAdmin):
-    fields = ['user', 'birth_date', 'phone', 'address', 'status', 'enrolled_date']
+    fields = [
+        'user', 'patronymic', 'birth_date', 'phone', 'address', 'snils',
+        'birth_certificate', 'status', 'enrolled_date',
+    ]
     readonly_fields = ['enrolled_date']
     list_display = ['get_full_name', 'get_email', 'status', 'enrolled_date', 'age']
     list_filter = [HasParentFilter, 'status']
@@ -53,8 +56,18 @@ class TeacherAdmin(admin.ModelAdmin):
 @admin.register(Parent)
 class ParentAdmin(admin.ModelAdmin):
     list_display = ['get_full_name', 'phone', 'work_place']
-    search_fields = ['user__first_name', 'user__last_name']
+    search_fields = ['user__first_name', 'user__last_name', 'user__email']
     filter_horizontal = ['children']
+    fieldsets = (
+        (None, {'fields': ('user', 'children')}),
+        ('Контакты', {'fields': ('phone', 'patronymic', 'address', 'additional_contacts', 'work_place')}),
+        ('Паспорт и СНИЛС', {
+            'fields': (
+                'passport_series', 'passport_number', 'passport_issued_by',
+                'passport_issued_date', 'snils', 'passport',
+            ),
+        }),
+    )
 
 
 @admin.register(Manager)

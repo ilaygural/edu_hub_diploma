@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid" style="max-width: 960px;">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <h1 class="mb-0">Данные для договора</h1>
+        <a href="{% url 'manager_pupils' %}" class="btn btn-outline-secondary">← К списку учеников</a>
+    </div>
+
+    <p class="text-muted">
+        Обучающийся:
+        <strong>{{ pupil.user.last_name }} {{ pupil.user.first_name }} {{ pupil.patronymic }}</strong>
+        (логин: {{ pupil.user.username }})
+    </p>
+
+    {% if enrollments %}
+        <div class="card mb-4">
+            <div class="card-header"><strong>Зачисление</strong></div>
+            <ul class="list-group list-group-flush">
+                {% for e in enrollments %}
+                    <li class="list-group-item">
+                        {{ e.group.course.title }} — группа «{{ e.group.name }}»
+                        {% if e.group.course.direction_header %}
+                            <span class="text-muted">({{ e.group.course.direction_header }})</span>
+                        {% endif %}
+                        <span class="text-muted small">с {{ e.date_from|date:"d.m.Y" }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Обучающийся</strong>
+            {% if pupil.is_contract_data_complete %}
+                <span class="badge bg-success">Заполнено</span>
+            {% else %}
+                <span class="badge bg-warning text-dark">Не всё заполнено</span>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% if pupil_missing %}
+                <div class="alert alert-warning py-2 small">
+                    Не хватает: {{ pupil_missing|join:", " }}
+                </div>
+            {% endif %}
+            <dl class="row mb-0">
+                <dt class="col-sm-4">ФИО</dt>
+                <dd class="col-sm-8">{{ pupil.user.last_name }} {{ pupil.user.first_name }} {{ pupil.patronymic|default:"—" }}</dd>
+
+                <dt class="col-sm-4">Дата рождения</dt>
+                <dd class="col-sm-8">{{ pupil.birth_date|date:"d.m.Y"|default:"—" }}</dd>
+
+                <dt class="col-sm-4">Место рождения</dt>
+                <dd class="col-sm-8">{{ pupil.place_of_birth|default:"—" }}</dd>
+
+                <dt class="col-sm-4">СНИЛС</dt>
+                <dd class="col-sm-8">{{ pupil.snils|default:"—" }}</dd>
+
+                <dt class="col-sm-4">Номер сертификата ПФДО</dt>
+                <dd class="col-sm-8">{{ pupil.pfdo_certificate_number|default:"—" }}</dd>
+
+                <dt class="col-sm-4">Документ</dt>
+                <dd class="col-sm-8">{{ pupil.get_identity_document_type_display }}</dd>
+
+                {% if pupil.identity_document_type == 1 %}
+                    <dt class="col-sm-4">Свидетельство о рождении</dt>
+                    <dd class="col-sm-8"><pre class="mb-0 bg-light p-2 rounded small">{{ pupil.birth_certificate|default:"—" }}</pre></dd>
+                {% else %}
+                    <dt class="col-sm-4">Паспорт</dt>
+                    <dd class="col-sm-8">
+                        {{ pupil.passport_series|default:"" }} {{ pupil.passport_number|default:"—" }}<br>
+                        {% if pupil.passport_issued_by %}Кем выдан: {{ pupil.passport_issued_by }}<br>{% endif %}
+                        {% if pupil.passport_issued_date %}Дата: {{ pupil.passport_issued_date|date:"d.m.Y" }}{% endif %}
+                    </dd>
+                {% endif %}
+
+                <dt class="col-sm-4">Телефон</dt>
+                <dd class="col-sm-8">{{ pupil.phone|default:"—" }}</dd>
+
+                <dt class="col-sm-4">Адрес</dt>
+                <dd class="col-sm-8">{{ pupil.address|default:"—" }}</dd>
+            </dl>
+        </div>
+    </div>
+
+    {% for item in parents_status %}
+        {% with parent=item.parent %}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Родитель (законный представитель)</strong>
+                {% if item.complete %}
+                    <span class="badge bg-success">Заполнено</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">Не всё заполнено</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if item.missing %}
+                    <div class="alert alert-warning py-2 small">
+                        Не хватает: {{ item.missing|join:", " }}
+                    </div>
+                {% endif %}
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Статус</dt>
+                    <dd class="col-sm-8">{{ parent.get_representative_relation_display }}</dd>
+
+                    <dt class="col-sm-4">ФИО</dt>
+                    <dd class="col-sm-8">{{ parent.user.last_name }} {{ parent.user.first_name }} {{ parent.patronymic|default:"" }}</dd>
+
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">{{ parent.user.email|default:"—" }}</dd>
+
+                    <dt class="col-sm-4">Телефон</dt>
+                    <dd class="col-sm-8">{{ parent.phone|default:"—" }}</dd>
+
+                    <dt class="col-sm-4">Домашний адрес</dt>
+                    <dd class="col-sm-8">{{ parent.address|default:"—" }}</dd>
+
+                    <dt class="col-sm-4">Паспорт</dt>
+                    <dd class="col-sm-8">
+                        {{ parent.passport_series|default:"" }} {{ parent.passport_number|default:"—" }}<br>
+                        {% if parent.passport_issued_by %}Кем выдан: {{ parent.passport_issued_by }}<br>{% endif %}
+                        {% if parent.passport_issued_date %}Дата: {{ parent.passport_issued_date|date:"d.m.Y" }}{% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">СНИЛС</dt>
+                    <dd class="col-sm-8">{{ parent.snils|default:"—" }}</dd>
+
+                    <dt class="col-sm-4">Место работы</dt>
+                    <dd class="col-sm-8">{{ parent.work_place|default:"—" }}</dd>
+
+                    <dt class="col-sm-4">Доп. контакты</dt>
+                    <dd class="col-sm-8">{{ parent.additional_contacts|default:"—" }}</dd>
+                </dl>
+            </div>
+        </div>
+        {% endwith %}
+    {% empty %}
+        <div class="alert alert-info">К ученику не привязан родитель в системе.</div>
+    {% endfor %}
+
+    <p class="text-muted small mb-0">
+        Редактирование — только в личном кабинете родителя. Менеджер просматривает данные для оформления договора.
+    </p>
+</div>
+{% endblock %}

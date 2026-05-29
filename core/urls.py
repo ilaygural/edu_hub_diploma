@@ -36,6 +36,11 @@ urlpatterns = [
     path('expel/pupil/<int:pupil_id>/', views.expel_pupil, name='expel_pupil'),
     path('manager/applications/', views.manager_applications, name='manager_applications'),
     path('manager/pupils/', views.manager_pupils, name='manager_pupils'),
+    path(
+        'manager/pupils/<int:pupil_id>/contract/',
+        views.manager_pupil_contract,
+        name='manager_pupil_contract',
+    ),
     path('manager/groups/', views.manager_groups, name='manager_groups'),
     path('manager/schedule/', views.manager_schedule, name='manager_schedule'),
     path('manager/payments/', views.manager_payments, name='manager_payments'),
@@ -47,7 +52,8 @@ urlpatterns = [
     path('teacher/group/<int:pk>/', TeacherGroupDetailView.as_view(), name='teacher_group_detail'),
     path('teacher/lesson/<int:pk>/', views.LessonDetailView.as_view(), name='lesson_detail'),
     path('teacher/journal/', views.TeacherJournalView.as_view(), name='teacher_journal'),
+    path('teacher/ktp/', views.TeacherKTPGenerateView.as_view(), name='teacher_ktp'),
     path('teacher/lesson/<int:pk>/', TeacherLessonView.as_view(), name='teacher_lesson'),
-    path('parent/profile/edit/', views.ParentProfileUpdateView.as_view(), name='parent_profile_edit'),
+    path('parent/profile/edit/', views.ParentContractEditView.as_view(), name='parent_profile_edit'),
 
 ]

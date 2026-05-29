@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
+from django.http import FileResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.urls import reverse_lazy
@@ -12,7 +13,21 @@ from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
 from accounts.models import Teacher, Parent, Pupil
 from schedule.models import Enrollment, Group, Schedule
-from .forms import CourseQuestionForm, ReviewForm, UploadFileForm, ParentProfileForm
+from .forms import (
+    CourseQuestionForm,
+    ReviewForm,
+    UploadFileForm,
+    ParentProfileForm,
+    PupilContractForm,
+    KTPGenerationForm,
+    KomplektovanieForm,
+)
+from .komplektovanie import build_komplektovanie_report, build_komplektovanie_xlsx
+from .ktp import (
+    build_ktp_xlsx,
+    default_weekday_slot,
+    split_lessons_for_template,
+)
 from .mixins import DataMixin
 from .models import Course, Tag, UploadFiles
 from django.views.generic.edit import CreateView
@@ -71,7 +86,7 @@ class CourseDetailView(DetailView):
 
 class CourseCreateView(CreateView):
     model = Course
-    fields = ['title', 'description', 'price', 'code', 'photo', 'is_published', 'tags', 'teachers']
+    fields = ['title', 'description', 'price', 'code', 'direction', 'photo', 'is_published', 'tags', 'teachers']
     template_name = 'core/course_form.html'
 
     def get_context_data(self, **kwargs):
@@ -85,7 +100,7 @@ class CourseCreateView(CreateView):
 
 class CourseUpdateView(UpdateView):
     model = Course
-    fields = ['title', 'description', 'price', 'code', 'photo', 'is_published', 'tags', 'teachers']
+    fields = ['title', 'description', 'price', 'code', 'direction', 'photo', 'is_published', 'tags', 'teachers']
     template_name = 'core/course_form.html'
 
     def get_context_data(self, **kwargs):
@@ -227,13 +242,34 @@ class ParentDashboardView(LoginRequiredMixin, TemplateView):
                 'enrollments': enrollments
             })
 
+        context['parent_profile'] = parent
+        context['parent_contract_complete'] = parent.is_contract_data_complete
+        context['children_contract_status'] = [
+            {
+                'child': child,
+                'complete': child.is_contract_data_complete,
+                'missing': child.contract_filled_fields()[1],
+            }
+            for child in children
+        ]
         context['children_data'] = children_data
         return context
 
 
-class ParentProfileUpdateView(LoginRequiredMixin, UpdateView):
-    model = Parent
-    form_class = ParentProfileForm
+def _split_fio(full_name: str) -> tuple[str, str, str]:
+    """Фамилия, имя, отчество из строки заявки."""
+    parts = full_name.strip().split()
+    if len(parts) >= 3:
+        return parts[0], parts[1], ' '.join(parts[2:])
+    if len(parts) == 2:
+        return parts[0], parts[1], ''
+    if len(parts) == 1:
+        return '', parts[0], ''
+    return '', '', ''
+
+
+class ParentContractEditView(LoginRequiredMixin, View):
+    """Данные родителя и детей для договора."""
     template_name = 'core/parent/profile_edit.html'
     success_url = reverse_lazy('parent_dashboard')
 
@@ -242,12 +278,66 @@ class ParentProfileUpdateView(LoginRequiredMixin, UpdateView):
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
-    def get_object(self, queryset=None):
-        return self.request.user.parent_profile
+    def _children(self):
+        return self.request.user.parent_profile.children.select_related('user').order_by(
+            'user__last_name', 'user__first_name',
+        )
 
-    def form_valid(self, form):
-        messages.success(self.request, 'Данные профиля сохранены.')
-        return super().form_valid(form)
+    def _enrollment_info(self, child):
+        enrollment = (
+            child.pupil_enrollments.filter(date_to__isnull=True)
+            .select_related('group__course')
+            .first()
+        )
+        if not enrollment or not enrollment.group.course_id:
+            return None
+        course = enrollment.group.course
+        return {
+            'course_title': course.title,
+            'group_name': enrollment.group.name,
+            'direction': course.direction_header or '—',
+        }
+
+    def _build_child_forms(self, data=None):
+        forms_list = []
+        for child in self._children():
+            prefix = f'child_{child.pk}'
+            if data is not None:
+                form = PupilContractForm(data, instance=child, prefix=prefix)
+            else:
+                form = PupilContractForm(instance=child, prefix=prefix)
+            forms_list.append({
+                'child': child,
+                'form': form,
+                'enrollment': self._enrollment_info(child),
+            })
+        return forms_list
+
+    def get(self, request):
+        parent = request.user.parent_profile
+        return render(request, self.template_name, {
+            'parent_form': ParentProfileForm(instance=parent),
+            'child_forms': self._build_child_forms(),
+        })
+
+    def post(self, request):
+        parent = request.user.parent_profile
+        parent_form = ParentProfileForm(request.POST, instance=parent)
+        child_forms = self._build_child_forms(data=request.POST)
+        all_valid = parent_form.is_valid() and all(item['form'].is_valid() for item in child_forms)
+
+        if all_valid:
+            parent_form.save()
+            for item in child_forms:
+                item['form'].save()
+            messages.success(request, 'Данные для договора сохранены.')
+            return redirect(self.success_url)
+
+        messages.error(request, 'Проверьте форму: есть ошибки или незаполненные поля.')
+        return render(request, self.template_name, {
+            'parent_form': parent_form,
+            'child_forms': child_forms,
+        })
 
 
 class TeacherDashboardView(LoginRequiredMixin, TemplateView):
@@ -387,6 +477,99 @@ class TeacherJournalView(LoginRequiredMixin, TemplateView):
         return redirect(f"{request.path}?group={group_id}&lesson={lesson_id}")
 
 
+class TeacherKTPGenerateView(LoginRequiredMixin, FormView):
+    """Генерация каркаса КТП (xlsx) по шаблону Excel."""
+
+    form_class = KTPGenerationForm
+    template_name = 'core/teacher/ktp_generate.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not hasattr(request.user, 'teacher_profile'):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['teacher'] = self.request.user.teacher_profile
+        return kwargs
+
+    def form_valid(self, form):
+        cleaned = form.cleaned_data
+        half_year_choice = cleaned['half_year']
+        skip_holidays = cleaned.get('skip_holidays', True)
+        weekdays = cleaned['weekdays']
+
+        period_configs: list[tuple[int, date, date]] = []
+        if half_year_choice == 'both':
+            period_configs = [
+                (1, cleaned['date_from'], cleaned['date_to']),
+                (2, cleaned['date_from_2'], cleaned['date_to_2']),
+            ]
+        else:
+            period_configs = [
+                (int(half_year_choice), cleaned['date_from'], cleaned['date_to']),
+            ]
+
+        periods: list[tuple[int, list[date], list[date]]] = []
+        sorted_weekdays: list[str] = []
+
+        for half_year, date_from, date_to in period_configs:
+            try:
+                left_dates, right_dates, sorted_weekdays = split_lessons_for_template(
+                    date_from,
+                    date_to,
+                    weekdays,
+                    skip_holidays=skip_holidays,
+                )
+            except ValueError as exc:
+                form.add_error(None, str(exc))
+                return self.form_invalid(form)
+
+            lesson_count = len(left_dates) + len(right_dates)
+            if lesson_count == 0:
+                form.add_error(
+                    None,
+                    f'За период {half_year}-го полугодия не получено ни одной даты занятия.',
+                )
+                return self.form_invalid(form)
+            periods.append((half_year, left_dates, right_dates))
+
+        group = cleaned.get('group')
+        group_name = str(group) if group else ''
+
+        weekday_slot_1 = cleaned.get('weekday_slot_1') or default_weekday_slot(
+            sorted_weekdays[0], default_time='10:30 - 12:00',
+        )
+        weekday_slot_2 = cleaned.get('weekday_slot_2') or default_weekday_slot(
+            sorted_weekdays[1], default_time='10:00 - 11:30',
+        )
+
+        try:
+            buffer = build_ktp_xlsx(
+                periods,
+                group_name=group_name,
+                weekday_slot_1=weekday_slot_1,
+                weekday_slot_2=weekday_slot_2,
+            )
+        except (FileNotFoundError, ValueError) as exc:
+            form.add_error(None, str(exc))
+            return self.form_invalid(form)
+
+        if half_year_choice == 'both':
+            filename = (
+                f"ktp_both_{cleaned['date_from']}_{cleaned['date_to']}_"
+                f"{cleaned['date_from_2']}_{cleaned['date_to_2']}.xlsx"
+            )
+        else:
+            filename = f"ktp_{half_year_choice}half_{cleaned['date_from']}_{cleaned['date_to']}.xlsx"
+        return FileResponse(
+            buffer,
+            as_attachment=True,
+            filename=filename,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+
+
 class TeacherLessonView(DetailView):
     model = Schedule
     template_name = 'core/teacher/lesson_detail.html'
@@ -486,13 +669,14 @@ def approve_application(request, pk):
     app = get_object_or_404(Application, pk=pk)
     password = get_random_string(8)
     # 1. Родитель
+    parent_last, parent_first, parent_patronymic = _split_fio(app.parent_name)
     parent_user, parent_created = User.objects.get_or_create(
         username=app.parent_email,
         defaults={
             'email': app.parent_email,
-            'first_name': app.parent_name.split()[0] if app.parent_name else '',
-            'last_name': app.parent_name.split()[-1] if len(app.parent_name.split()) > 1 else '',
-        }
+            'first_name': parent_first,
+            'last_name': parent_last,
+        },
     )
 
     if parent_created:
@@ -501,16 +685,28 @@ def approve_application(request, pk):
 
     parent, _ = Parent.objects.get_or_create(
         user=parent_user,
-        defaults={'phone': app.parent_phone}
+        defaults={'phone': app.parent_phone},
     )
+    if app.parent_phone and not parent.phone:
+        parent.phone = app.parent_phone
+    if parent_patronymic and not parent.patronymic:
+        parent.patronymic = parent_patronymic
+    if parent_last and not parent_user.last_name:
+        parent_user.last_name = parent_last
+    if parent_first and not parent_user.first_name:
+        parent_user.first_name = parent_first
+    parent.save()
+    parent_user.save()
 
     # 2. Ученик
-    pupil_username = app.child_name.replace(' ', '_').lower()
+    child_last, child_first, child_patronymic = _split_fio(app.child_name)
+    pupil_username = app.child_name.replace(' ', '_').lower()[:150]
     pupil_user, pupil_created = User.objects.get_or_create(
         username=pupil_username,
         defaults={
-            'first_name': app.child_name,
-        }
+            'first_name': child_first or app.child_name,
+            'last_name': child_last,
+        },
     )
 
     if pupil_created:
@@ -519,8 +715,16 @@ def approve_application(request, pk):
 
     pupil, _ = Pupil.objects.get_or_create(
         user=pupil_user,
-        defaults={'birth_date': None}
+        defaults={'birth_date': None},
     )
+    if child_patronymic and not pupil.patronymic:
+        pupil.patronymic = child_patronymic
+    if child_last and not pupil_user.last_name:
+        pupil_user.last_name = child_last
+    if child_first and not pupil_user.first_name:
+        pupil_user.first_name = child_first
+    pupil.save()
+    pupil_user.save()
 
     # 3. Связываем
     parent.children.add(pupil)
@@ -603,7 +807,13 @@ def courses_by_tag(request, tag_slug):
     return render(request, 'core/courses_list.html', context)
 
 
+def _require_manager(request):
+    if not hasattr(request.user, 'manager_profile'):
+        raise PermissionDenied
+
+
 def manager_applications(request):
+    _require_manager(request)
     filter_by = request.GET.get('filter', 'new')
     if filter_by == 'approved':
         applications = Application.objects.filter(status='approved')
@@ -615,8 +825,46 @@ def manager_applications(request):
 
 
 def manager_pupils(request):
-    pupils = Pupil.objects.all()
+    _require_manager(request)
+    pupils = (
+        Pupil.objects
+        .select_related('user')
+        .prefetch_related(
+            'pupil_enrollments__group__course',
+            'parents__user',
+        )
+        .order_by('user__last_name', 'user__first_name')
+    )
     return render(request, 'core/manager/pupils.html', {'pupils': pupils})
+
+
+@login_required
+def manager_pupil_contract(request, pupil_id):
+    _require_manager(request)
+    pupil = get_object_or_404(
+        Pupil.objects.select_related('user').prefetch_related('parents__user'),
+        pk=pupil_id,
+    )
+    parents = list(pupil.parents.all())
+    enrollments = (
+        pupil.pupil_enrollments.filter(date_to__isnull=True)
+        .select_related('group__course')
+        .order_by('-date_from')
+    )
+    return render(request, 'core/manager/pupil_contract.html', {
+        'pupil': pupil,
+        'parents': parents,
+        'enrollments': enrollments,
+        'pupil_missing': pupil.contract_filled_fields()[1],
+        'parents_status': [
+            {
+                'parent': parent,
+                'missing': parent.contract_filled_fields()[1],
+                'complete': parent.is_contract_data_complete,
+            }
+            for parent in parents
+        ],
+    })
 
 
 def manager_groups(request):
@@ -645,6 +893,35 @@ def manager_payments(request):
 
 
 def manager_reports(request):
+    _require_manager(request)
+
+    komplektovanie_form = KomplektovanieForm(
+        request.POST if request.method == 'POST' else None,
+        initial={'report_date': timezone.localdate()},
+    )
+    komplektovanie_preview = None
+    komplektovanie_warnings = []
+
+    if request.method == 'POST' and komplektovanie_form.is_valid():
+        report_date = komplektovanie_form.cleaned_data['report_date']
+        if 'download_komplektovanie' in request.POST:
+            try:
+                buffer = build_komplektovanie_xlsx(report_date)
+            except (FileNotFoundError, ValueError) as exc:
+                messages.error(request, str(exc))
+            else:
+                filename = f'komplektovanie_{report_date:%Y-%m-%d}.xlsx'
+                return FileResponse(
+                    buffer,
+                    as_attachment=True,
+                    filename=filename,
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                )
+        elif 'preview_komplektovanie' in request.POST:
+            report = build_komplektovanie_report(report_date)
+            komplektovanie_preview = report.directions
+            komplektovanie_warnings = report.warnings
+
     new_count = Application.objects.filter(status='new').count()
     approved_count = Application.objects.filter(status='approved').count()
     rejected_count = Application.objects.filter(status='rejected').count()
@@ -669,4 +946,7 @@ def manager_reports(request):
         'active_groups_count': active_groups_count,
         'recent_applications': recent_applications,
         'groups_stats': groups_stats,
+        'komplektovanie_form': komplektovanie_form,
+        'komplektovanie_preview': komplektovanie_preview,
+        'komplektovanie_warnings': komplektovanie_warnings,
     })

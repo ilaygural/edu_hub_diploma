@@ -38,6 +38,46 @@ class Pupil(models.Model):
         blank=True,
         verbose_name='Адрес'
     )
+    patronymic = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Отчество',
+    )
+    snils = models.CharField(
+        max_length=14,
+        blank=True,
+        verbose_name='СНИЛС',
+    )
+    birth_certificate = models.TextField(
+        blank=True,
+        verbose_name='Свидетельство о рождении',
+        help_text='Серия, номер, кем и когда выдано',
+    )
+    place_of_birth = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Место рождения',
+    )
+    pfdo_certificate_number = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name='Номер сертификата ПФДО',
+        help_text='Если есть сертификат персонифицированного финансирования',
+    )
+
+    class IdentityDocument(models.IntegerChoices):
+        BIRTH_CERTIFICATE = 1, 'Свидетельство о рождении'
+        PASSPORT = 2, 'Паспорт'
+
+    identity_document_type = models.IntegerField(
+        choices=IdentityDocument.choices,
+        default=IdentityDocument.BIRTH_CERTIFICATE,
+        verbose_name='Документ ребёнка',
+    )
+    passport_series = models.CharField(max_length=10, blank=True, verbose_name='Серия паспорта')
+    passport_number = models.CharField(max_length=10, blank=True, verbose_name='Номер паспорта')
+    passport_issued_by = models.CharField(max_length=255, blank=True, verbose_name='Кем выдан')
+    passport_issued_date = models.DateField(null=True, blank=True, verbose_name='Дата выдачи паспорта')
 
     objects = PupilManager()
 
@@ -94,6 +134,30 @@ class Pupil(models.Model):
 
     get_email.short_description = 'Email'
 
+    def contract_filled_fields(self) -> tuple[list[str], list[str]]:
+        """(заполнено, не заполнено) — ключевые поля для договора."""
+        user = self.user
+        checks = {
+            'Фамилия': bool(user.last_name.strip()),
+            'Имя': bool(user.first_name.strip()),
+            'Дата рождения': bool(self.birth_date),
+        }
+        if self.identity_document_type == self.IdentityDocument.BIRTH_CERTIFICATE:
+            checks['Свидетельство о рождении'] = bool(self.birth_certificate.strip())
+        else:
+            checks['Паспорт ребёнка'] = bool(
+                self.passport_series.strip() and self.passport_number.strip()
+            )
+        filled = [k for k, ok in checks.items() if ok]
+        missing = [k for k, ok in checks.items() if not ok]
+        return filled, missing
+
+    @property
+    def is_contract_data_complete(self) -> bool:
+        _, missing = self.contract_filled_fields()
+        return len(missing) == 0
+
+
 class Teacher(models.Model):
     user = models.OneToOneField(
         User,
@@ -144,10 +208,38 @@ class Parent(models.Model):
     )
 
     phone = models.CharField(max_length=20, blank=True, verbose_name='Телефон')
+    patronymic = models.CharField(max_length=100, blank=True, verbose_name='Отчество')
     work_place = models.CharField(max_length=200, blank=True, verbose_name='Место работы')
     additional_contacts = models.TextField(blank=True, verbose_name="Дополнительные контакты")
+    class RepresentativeRelation(models.IntegerChoices):
+        PARENT = 1, 'Родитель'
+        LEGAL_GUARDIAN = 2, 'Законный представитель'
+
+    representative_relation = models.IntegerField(
+        choices=RepresentativeRelation.choices,
+        default=RepresentativeRelation.PARENT,
+        verbose_name='Статус',
+        help_text='Как указано в договоре (родитель или законный представитель)',
+    )
     address = models.CharField(max_length=255, blank=True, verbose_name='Домашний адрес')
-    passport = models.TextField(blank=True, verbose_name='Паспортные данные')
+    snils = models.CharField(max_length=14, blank=True, verbose_name='СНИЛС')
+    passport_series = models.CharField(max_length=10, blank=True, verbose_name='Серия паспорта')
+    passport_number = models.CharField(max_length=10, blank=True, verbose_name='Номер паспорта')
+    passport_issued_by = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Кем выдан паспорт',
+    )
+    passport_issued_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name='Дата выдачи паспорта',
+    )
+    passport = models.TextField(
+        blank=True,
+        verbose_name='Прочие паспортные данные',
+        help_text='Необязательно, если заполнены поля выше',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -167,6 +259,28 @@ class Parent(models.Model):
         return self.user.get_full_name()
 
     get_full_name.short_description = 'ФИО'
+
+    def contract_filled_fields(self) -> tuple[list[str], list[str]]:
+        user = self.user
+        checks = {
+            'Фамилия': bool(user.last_name.strip()),
+            'Имя': bool(user.first_name.strip()),
+            'Телефон': bool(self.phone.strip()),
+            'Домашний адрес': bool(self.address.strip()),
+            'Отчество': bool(self.patronymic.strip()),
+            'Серия и номер паспорта': bool(self.passport_series.strip() and self.passport_number.strip()),
+            'Кем выдан паспорт': bool(self.passport_issued_by.strip()),
+            'Дата выдачи паспорта': bool(self.passport_issued_date),
+        }
+        filled = [k for k, ok in checks.items() if ok]
+        missing = [k for k, ok in checks.items() if not ok]
+        return filled, missing
+
+    @property
+    def is_contract_data_complete(self) -> bool:
+        _, missing = self.contract_filled_fields()
+        return len(missing) == 0
+
 
 class Manager(models.Model):
     user = models.OneToOneField(

@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <h3 class="mb-3">Сформировать КТП</h3>
+        <p class="text-muted">
+            Укажите период полугодия, выберите <strong>ровно два</strong> дня недели (например, пн и чт).
+            Даты считаются по календарю с учётом праздников. Второй лист остаётся пустым,
+            если выбрано одно полугодие.
+        </p>
+
+        <form method="post" class="card p-4">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.half_year.label }}</label>
+                    {{ form.half_year }}
+                    {{ form.half_year.errors }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.group.label }}</label>
+                    {{ form.group }}
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.date_from.label }}</label>
+                    {{ form.date_from }}
+                    <div class="form-text" id="period1-hint">Период для выбранного полугодия</div>
+                    {{ form.date_from.errors }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.date_to.label }}</label>
+                    {{ form.date_to }}
+                    {{ form.date_to.errors }}
+                </div>
+            </div>
+
+            <div class="row mb-3" id="period2-fields">
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.date_from_2.label }}</label>
+                    {{ form.date_from_2 }}
+                    {{ form.date_from_2.errors }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.date_to_2.label }}</label>
+                    {{ form.date_to_2 }}
+                    {{ form.date_to_2.errors }}
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.weekday_slot_1.label }}</label>
+                    {{ form.weekday_slot_1 }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ form.weekday_slot_2.label }}</label>
+                    {{ form.weekday_slot_2 }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label d-block">{{ form.weekdays.label }}</label>
+                {% for checkbox in form.weekdays %}
+                    <div class="form-check form-check-inline">
+                        {{ checkbox.tag }}
+                        <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                    </div>
+                {% endfor %}
+                {{ form.weekdays.errors }}
+            </div>
+
+            <div class="mb-4 form-check">
+                {{ form.skip_holidays }}
+                <label class="form-check-label" for="{{ form.skip_holidays.id_for_label }}">
+                    {{ form.skip_holidays.label }}
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Скачать Excel</button>
+            <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline-secondary ms-2">Назад</a>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    const halfYear = document.getElementById('{{ form.half_year.id_for_label }}');
+    const period2 = document.getElementById('period2-fields');
+    const hint = document.getElementById('period1-hint');
+    const labels = {
+        '1': ['Начало 1-го полугодия', 'Конец 1-го полугодия'],
+        '2': ['Начало 2-го полугодия', 'Конец 2-го полугодия'],
+        'both': ['Начало 1-го полугодия', 'Конец 1-го полугодия'],
+    };
+
+    function updateForm() {
+        const value = halfYear.value;
+        period2.style.display = value === 'both' ? '' : 'none';
+        const fromLabel = document.querySelector('label[for="{{ form.date_from.id_for_label }}"]');
+        const toLabel = document.querySelector('label[for="{{ form.date_to.id_for_label }}"]');
+        if (fromLabel && toLabel && labels[value]) {
+            fromLabel.textContent = labels[value][0];
+            toLabel.textContent = labels[value][1];
+        }
+        if (hint) {
+            hint.textContent = value === 'both'
+                ? 'Период первого полугодия'
+                : 'Период для выбранного полугодия';
+        }
+    }
+
+    halfYear.addEventListener('change', updateForm);
+    updateForm();
+})();
+</script>
+{% endblock %}

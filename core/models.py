@@ -31,11 +31,32 @@ class Course(models.Model):
         DRAFT = 0, 'Черновик'
         PUBLISHED = 1, 'Опубликовано'
 
+    class Direction(models.IntegerChoices):
+        NATURAL_SCIENCE = 1, 'Естественно научная'
+        TECHNICAL = 2, 'Научно техническая'
+        SOCIAL_HUMANITIES = 3, 'Социально гуманитарная'
+        SPORTS = 4, 'Физкультурно спортивная'
+        ARTISTIC = 5, 'Художественная'
+
+    DIRECTION_HEADERS = {
+        Direction.NATURAL_SCIENCE: '1. Естественно научная направленность',
+        Direction.TECHNICAL: '2. Научно техническая направленность',
+        Direction.SOCIAL_HUMANITIES: '3. Социально гуманитарная направленность',
+        Direction.SPORTS: '4. Физкультурно спортивная направленность',
+        Direction.ARTISTIC: '5. Художественная направленность',
+    }
+
     title = models.CharField(max_length=200, verbose_name='Название курса')
     description = models.TextField(blank=True, verbose_name='Описание')  # blank=True как в примере
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена', default=0)
     slug = models.SlugField(max_length=200, unique=True, db_index=True, verbose_name='URL')
     code = models.CharField(max_length=20, unique=True, verbose_name="Код курса")
+    direction = models.IntegerField(
+        choices=Direction.choices,
+        null=True,
+        blank=True,
+        verbose_name='Направленность',
+    )
     time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
     time_update = models.DateTimeField(auto_now=True, verbose_name='Время изменения')
     photo = models.ImageField(upload_to="photos/%Y/%m/%d/", default=None, blank=True, null=True, verbose_name="Фото")
@@ -61,6 +82,12 @@ class Course(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def direction_header(self):
+        if self.direction is None:
+            return ''
+        return self.DIRECTION_HEADERS.get(self.direction, '')
 
     def get_absolute_url(self):
         return reverse('course_detail', kwargs={'slug': self.slug})
