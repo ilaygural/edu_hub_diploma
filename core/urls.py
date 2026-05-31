@@ -55,5 +55,11 @@ urlpatterns = [
     path('teacher/ktp/', views.TeacherKTPGenerateView.as_view(), name='teacher_ktp'),
     path('teacher/lesson/<int:pk>/', TeacherLessonView.as_view(), name='teacher_lesson'),
     path('parent/profile/edit/', views.ParentContractEditView.as_view(), name='parent_profile_edit'),
+    path('parent/messages/', views.parent_messages, name='parent_messages'),
+    path('parent/messages/new/', views.parent_message_compose, name='parent_message_compose'),
+    path('parent/messages/<int:thread_id>/', views.parent_message_thread, name='parent_message_thread'),
+    path('teacher/messages/', views.teacher_messages, name='teacher_messages'),
+    path('teacher/messages/new/', views.teacher_message_compose, name='teacher_message_compose'),
+    path('teacher/messages/<int:thread_id>/', views.teacher_message_thread, name='teacher_message_thread'),
 
 ]

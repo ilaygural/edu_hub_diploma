@@ -21,14 +21,35 @@ from .forms import (
     PupilContractForm,
     KTPGenerationForm,
     KomplektovanieForm,
+    ParentNewMessageForm,
+    TeacherNewMessageForm,
+    MessageReplyForm,
 )
+from .messaging import (
+    get_or_create_thread,
+    mark_thread_read,
+    parent_threads,
+    post_message,
+    teacher_threads,
+    thread_unread_for_parent,
+    thread_unread_for_teacher,
+    unread_count_for_parent,
+    unread_count_for_teacher,
+)
+from .models import MessageThread
 from .komplektovanie import build_komplektovanie_report, build_komplektovanie_xlsx
 from .ktp import (
     build_ktp_xlsx,
     default_weekday_slot,
     split_lessons_for_template,
 )
-from .mixins import DataMixin
+from .access import require_manager, require_parent, require_teacher
+from .mixins import (
+    DataMixin,
+    ManagerRequiredMixin,
+    ParentRequiredMixin,
+    TeacherRequiredMixin,
+)
 from .models import Course, Tag, UploadFiles
 from django.views.generic.edit import CreateView
 from .models import Application
@@ -221,7 +242,7 @@ class TeacherListView(ListView):
         return context
 
 
-class ParentDashboardView(LoginRequiredMixin, TemplateView):
+class ParentDashboardView(ParentRequiredMixin, TemplateView):
     template_name = 'core/parent/dashboard.html'
 
     def get_context_data(self, **kwargs):
@@ -253,6 +274,7 @@ class ParentDashboardView(LoginRequiredMixin, TemplateView):
             for child in children
         ]
         context['children_data'] = children_data
+        context['unread_messages_count'] = unread_count_for_parent(parent)
         return context
 
 
@@ -268,15 +290,10 @@ def _split_fio(full_name: str) -> tuple[str, str, str]:
     return '', '', ''
 
 
-class ParentContractEditView(LoginRequiredMixin, View):
+class ParentContractEditView(ParentRequiredMixin, View):
     """Данные родителя и детей для договора."""
     template_name = 'core/parent/profile_edit.html'
     success_url = reverse_lazy('parent_dashboard')
-
-    def dispatch(self, request, *args, **kwargs):
-        if not hasattr(request.user, 'parent_profile'):
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
 
     def _children(self):
         return self.request.user.parent_profile.children.select_related('user').order_by(
@@ -340,7 +357,7 @@ class ParentContractEditView(LoginRequiredMixin, View):
         })
 
 
-class TeacherDashboardView(LoginRequiredMixin, TemplateView):
+class TeacherDashboardView(TeacherRequiredMixin, TemplateView):
     template_name = 'core/teacher/dashboard.html'
 
     def get_context_data(self, **kwargs):
@@ -358,6 +375,7 @@ class TeacherDashboardView(LoginRequiredMixin, TemplateView):
         )
         context['groups'] = groups
         context['upcoming_lessons'] = lessons
+        context['unread_messages_count'] = unread_count_for_teacher(teacher)
         return context
 
 
@@ -416,13 +434,8 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
         return redirect(request.path)
 
 
-class TeacherJournalView(LoginRequiredMixin, TemplateView):
+class TeacherJournalView(TeacherRequiredMixin, TemplateView):
     template_name = 'core/teacher/journal.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        if not hasattr(request.user, 'teacher_profile'):
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
 
     def _get_teacher_groups(self):
         teacher = self.request.user.teacher_profile
@@ -477,16 +490,11 @@ class TeacherJournalView(LoginRequiredMixin, TemplateView):
         return redirect(f"{request.path}?group={group_id}&lesson={lesson_id}")
 
 
-class TeacherKTPGenerateView(LoginRequiredMixin, FormView):
+class TeacherKTPGenerateView(TeacherRequiredMixin, FormView):
     """Генерация каркаса КТП (xlsx) по шаблону Excel."""
 
     form_class = KTPGenerationForm
     template_name = 'core/teacher/ktp_generate.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        if not hasattr(request.user, 'teacher_profile'):
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -632,16 +640,11 @@ class ApplicationCreateView(CreateView):
         return context
 
 
-class ManagerDashboardView(LoginRequiredMixin, ListView):
+class ManagerDashboardView(ManagerRequiredMixin, ListView):
     model = Application
     template_name = 'core/manager/dashboard.html'
     context_object_name = 'applications'
     paginate_by = 20
-
-    def dispatch(self, request, *args, **kwargs):
-        if not hasattr(request.user, 'manager_profile'):
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         filter_by = self.request.GET.get('filter', 'new')
@@ -807,13 +810,10 @@ def courses_by_tag(request, tag_slug):
     return render(request, 'core/courses_list.html', context)
 
 
-def _require_manager(request):
-    if not hasattr(request.user, 'manager_profile'):
-        raise PermissionDenied
-
-
 def manager_applications(request):
-    _require_manager(request)
+    denied = require_manager(request)
+    if denied:
+        return denied
     filter_by = request.GET.get('filter', 'new')
     if filter_by == 'approved':
         applications = Application.objects.filter(status='approved')
@@ -825,7 +825,9 @@ def manager_applications(request):
 
 
 def manager_pupils(request):
-    _require_manager(request)
+    denied = require_manager(request)
+    if denied:
+        return denied
     pupils = (
         Pupil.objects
         .select_related('user')
@@ -840,7 +842,9 @@ def manager_pupils(request):
 
 @login_required
 def manager_pupil_contract(request, pupil_id):
-    _require_manager(request)
+    denied = require_manager(request)
+    if denied:
+        return denied
     pupil = get_object_or_404(
         Pupil.objects.select_related('user').prefetch_related('parents__user'),
         pk=pupil_id,
@@ -868,10 +872,16 @@ def manager_pupil_contract(request, pupil_id):
 
 
 def manager_groups(request):
+    denied = require_manager(request)
+    if denied:
+        return denied
     return render(request, 'core/manager/groups.html')
 
 
 def manager_schedule(request):
+    denied = require_manager(request)
+    if denied:
+        return denied
     group_id = request.GET.get('group')
     schedules = (
         Schedule.objects
@@ -889,11 +899,16 @@ def manager_schedule(request):
 
 
 def manager_payments(request):
+    denied = require_manager(request)
+    if denied:
+        return denied
     return render(request, 'core/manager/payments.html')
 
 
 def manager_reports(request):
-    _require_manager(request)
+    denied = require_manager(request)
+    if denied:
+        return denied
 
     komplektovanie_form = KomplektovanieForm(
         request.POST if request.method == 'POST' else None,
@@ -949,4 +964,131 @@ def manager_reports(request):
         'komplektovanie_form': komplektovanie_form,
         'komplektovanie_preview': komplektovanie_preview,
         'komplektovanie_warnings': komplektovanie_warnings,
+    })
+
+
+@login_required
+def parent_messages(request):
+    denied = require_parent(request)
+    if denied:
+        return denied
+    parent = request.user.parent_profile
+    threads = [
+        {'thread': thread, 'unread': thread_unread_for_parent(thread, parent)}
+        for thread in parent_threads(parent)
+    ]
+    return render(request, 'core/parent/messages_list.html', {
+        'threads': threads,
+        'unread_total': unread_count_for_parent(parent),
+    })
+
+
+@login_required
+def parent_message_compose(request):
+    denied = require_parent(request)
+    if denied:
+        return denied
+    parent = request.user.parent_profile
+    form = ParentNewMessageForm(parent, request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        thread = get_or_create_thread(
+            form.cleaned_data['pupil'],
+            parent,
+            form.cleaned_data['teacher'],
+        )
+        post_message(thread, request.user, form.cleaned_data['body'])
+        messages.success(request, 'Сообщение отправлено педагогу.')
+        return redirect('parent_message_thread', thread_id=thread.pk)
+    return render(request, 'core/parent/message_compose.html', {'form': form})
+
+
+@login_required
+def parent_message_thread(request, thread_id):
+    denied = require_parent(request)
+    if denied:
+        return denied
+    parent = request.user.parent_profile
+    thread = get_object_or_404(
+        MessageThread.objects.select_related('pupil__user', 'teacher__user'),
+        pk=thread_id,
+        parent=parent,
+    )
+    mark_thread_read(thread, request.user)
+    reply_form = MessageReplyForm(request.POST or None)
+    if request.method == 'POST' and reply_form.is_valid():
+        post_message(thread, request.user, reply_form.cleaned_data['body'])
+        messages.success(request, 'Сообщение отправлено.')
+        return redirect('parent_message_thread', thread_id=thread.pk)
+    message_list = thread.messages.select_related('author').order_by('created_at')
+    return render(request, 'core/parent/message_thread.html', {
+        'thread': thread,
+        'message_list': message_list,
+        'reply_form': reply_form,
+    })
+
+
+@login_required
+def teacher_messages(request):
+    denied = require_teacher(request)
+    if denied:
+        return denied
+    teacher = request.user.teacher_profile
+    threads = [
+        {'thread': thread, 'unread': thread_unread_for_teacher(thread, teacher)}
+        for thread in teacher_threads(teacher)
+    ]
+    return render(request, 'core/teacher/messages_list.html', {
+        'threads': threads,
+        'unread_total': unread_count_for_teacher(teacher),
+    })
+
+
+@login_required
+def teacher_message_compose(request):
+    denied = require_teacher(request)
+    if denied:
+        return denied
+    teacher = request.user.teacher_profile
+    pupil_for_parent_choice = None
+    if request.method == 'POST' and request.POST.get('pupil'):
+        pupil_for_parent_choice = Pupil.objects.filter(pk=request.POST.get('pupil')).first()
+    form = TeacherNewMessageForm(
+        teacher,
+        request.POST or None,
+        pupil_for_parent_choice=pupil_for_parent_choice,
+    )
+    if request.method == 'POST' and form.is_valid():
+        thread = get_or_create_thread(
+            form.cleaned_data['pupil'],
+            form.cleaned_data['parent'],
+            teacher,
+        )
+        post_message(thread, request.user, form.cleaned_data['body'])
+        messages.success(request, 'Сообщение отправлено родителю.')
+        return redirect('teacher_message_thread', thread_id=thread.pk)
+    return render(request, 'core/teacher/message_compose.html', {'form': form})
+
+
+@login_required
+def teacher_message_thread(request, thread_id):
+    denied = require_teacher(request)
+    if denied:
+        return denied
+    teacher = request.user.teacher_profile
+    thread = get_object_or_404(
+        MessageThread.objects.select_related('pupil__user', 'parent__user'),
+        pk=thread_id,
+        teacher=teacher,
+    )
+    mark_thread_read(thread, request.user)
+    reply_form = MessageReplyForm(request.POST or None)
+    if request.method == 'POST' and reply_form.is_valid():
+        post_message(thread, request.user, reply_form.cleaned_data['body'])
+        messages.success(request, 'Ответ отправлен.')
+        return redirect('teacher_message_thread', thread_id=thread.pk)
+    message_list = thread.messages.select_related('author').order_by('created_at')
+    return render(request, 'core/teacher/message_thread.html', {
+        'thread': thread,
+        'message_list': message_list,
+        'reply_form': reply_form,
     })

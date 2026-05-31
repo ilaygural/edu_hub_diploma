@@ -60,3 +60,21 @@ def show_status_badge():
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key)
+
+
+@register.simple_tag
+def message_author_label(message, viewer_role):
+    """
+    Имя автора в переписке.
+    viewer_role: 'parent' или 'teacher' — кто смотрит страницу.
+    """
+    author = message.author
+    if viewer_role == 'parent' and hasattr(author, 'teacher_profile'):
+        return author.teacher_profile.name_for_parent
+    if viewer_role == 'teacher' and hasattr(author, 'parent_profile'):
+        return author.parent_profile.fio
+    if viewer_role == 'parent' and hasattr(author, 'parent_profile'):
+        return author.parent_profile.fio
+    if viewer_role == 'teacher' and hasattr(author, 'teacher_profile'):
+        return author.teacher_profile.name_for_parent
+    return author.get_full_name().strip() or author.username

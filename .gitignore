@@ -31,3 +31,7 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+
+# Локальные черновики и выгрузки (ВКР, договор, Excel)
+/_*.txt
+/_vkr_sections/

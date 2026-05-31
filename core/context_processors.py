@@ -16,3 +16,21 @@ def site_menu(request):
             item['active'] = True
 
     return {'main_menu': menu}
+
+
+def messaging_unread(request):
+    if not request.user.is_authenticated:
+        return {}
+    if hasattr(request.user, 'parent_profile'):
+        from core.messaging import unread_count_for_parent
+
+        return {
+            'unread_messages_count': unread_count_for_parent(request.user.parent_profile),
+        }
+    if hasattr(request.user, 'teacher_profile'):
+        from core.messaging import unread_count_for_teacher
+
+        return {
+            'unread_messages_count': unread_count_for_teacher(request.user.teacher_profile),
+        }
+    return {}

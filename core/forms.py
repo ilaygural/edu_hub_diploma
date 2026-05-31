@@ -1,7 +1,7 @@
 from django import forms
 from django.utils import timezone
 
-from accounts.models import Parent, Pupil
+from accounts.models import Parent, Pupil, Teacher
 from core.models import CourseReview, Application
 from schedule.models import Group, Schedule
 
@@ -335,6 +335,122 @@ class PupilContractForm(forms.ModelForm):
             user.save()
             pupil.save()
         return pupil
+
+
+class ParentNewMessageForm(forms.Form):
+    pupil = forms.ModelChoiceField(
+        label='Ребёнок',
+        queryset=Pupil.objects.none(),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    teacher = forms.ModelChoiceField(
+        label='Педагог',
+        queryset=Teacher.objects.none(),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    body = forms.CharField(
+        label='Сообщение',
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+    )
+
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.parent = parent
+        pupils = parent.children.select_related('user').all()
+        self.fields['pupil'].queryset = pupils
+        self.fields['pupil'].label_from_instance = lambda p: p.fio
+        teacher_ids: set[int] = set()
+        from core.messaging import teachers_for_parent_pupil
+
+        for pupil in pupils:
+            for teacher in teachers_for_parent_pupil(parent, pupil):
+                teacher_ids.add(teacher.pk)
+        teachers_qs = Teacher.objects.filter(pk__in=teacher_ids).select_related('user')
+        self.fields['teacher'].queryset = teachers_qs
+        self.fields['teacher'].label_from_instance = lambda t: t.name_for_parent
+
+    def clean(self):
+        cleaned = super().clean()
+        pupil = cleaned.get('pupil')
+        teacher = cleaned.get('teacher')
+        if pupil and teacher:
+            from core.messaging import teachers_for_parent_pupil
+
+            allowed = {t.pk for t in teachers_for_parent_pupil(self.parent, pupil)}
+            if teacher.pk not in allowed:
+                self.add_error('teacher', 'Этот педагог не ведёт активные группы выбранного ребёнка.')
+        return cleaned
+
+
+class TeacherNewMessageForm(forms.Form):
+    pupil = forms.ModelChoiceField(
+        label='Ученик',
+        queryset=Pupil.objects.none(),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    body = forms.CharField(
+        label='Сообщение',
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+    )
+
+    def __init__(self, teacher, *args, pupil_for_parent_choice=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.teacher = teacher
+        from core.messaging import parents_for_teacher_pupil, pupils_for_teacher
+
+        pupils_qs = pupils_for_teacher(teacher)
+        self.fields['pupil'].queryset = pupils_qs
+        self.fields['pupil'].label_from_instance = lambda p: p.fio
+
+        if pupil_for_parent_choice:
+            parents = parents_for_teacher_pupil(teacher, pupil_for_parent_choice)
+            if len(parents) > 1:
+                parents_qs = Parent.objects.filter(
+                    pk__in=[p.pk for p in parents],
+                ).select_related('user')
+                self.fields['parent'] = forms.ModelChoiceField(
+                    label='Родитель',
+                    queryset=parents_qs,
+                    widget=forms.Select(attrs={'class': 'form-select'}),
+                    help_text='У этого ученика в системе несколько родителей — выберите получателя.',
+                )
+                self.fields['parent'].label_from_instance = lambda p: p.fio
+
+    def clean(self):
+        cleaned = super().clean()
+        pupil = cleaned.get('pupil')
+        if not pupil:
+            return cleaned
+
+        from core.messaging import parents_for_teacher_pupil
+
+        parents = parents_for_teacher_pupil(self.teacher, pupil)
+        if not parents:
+            self.add_error(
+                'pupil',
+                'У ученика нет привязанного родителя. Оформите заявку и привязку в системе.',
+            )
+            return cleaned
+
+        if len(parents) == 1:
+            cleaned['parent'] = parents[0]
+        else:
+            parent = cleaned.get('parent')
+            if not parent:
+                self.add_error(
+                    'parent',
+                    'Выберите родителя — у ученика их несколько.',
+                )
+            else:
+                cleaned['parent'] = parent
+        return cleaned
+
+
+class MessageReplyForm(forms.Form):
+    body = forms.CharField(
+        label='Ответ',
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+    )
 
 
 class KomplektovanieForm(forms.Form):

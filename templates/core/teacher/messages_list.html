@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load core_tags %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Сообщения с родителями</h1>
+        <a href="{% url 'teacher_message_compose' %}" class="btn btn-primary">Написать</a>
+    </div>
+
+    {% if unread_total %}
+        <div class="alert alert-info py-2">Непрочитанных: {{ unread_total }}</div>
+    {% endif %}
+
+    {% if threads %}
+        <div class="list-group">
+            {% for item in threads %}
+                <a href="{% url 'teacher_message_thread' item.thread.id %}"
+                   class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between">
+                        <strong>
+                            {{ item.thread.parent.fio }}
+                        </strong>
+                        <small class="text-muted">{{ item.thread.updated_at|date:"d.m.Y H:i" }}</small>
+                    </div>
+                    <div class="text-muted small">
+                        Ученик: {{ item.thread.pupil.fio }}
+                    </div>
+                    {% if item.unread %}
+                        <span class="badge bg-primary mt-1">Новых: {{ item.unread }}</span>
+                    {% endif %}
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-light border">Сообщений от родителей пока нет.</div>
+    {% endif %}
+</div>
+{% endblock %}

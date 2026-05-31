@@ -199,3 +199,69 @@ class Application(models.Model):
     def __str__(self):
         return f'{self.child_name} - {self.course.title} ({self.status})'
 
+
+class MessageThread(models.Model):
+    """Переписка родителя с педагогом по конкретному ребёнку."""
+    pupil = models.ForeignKey(
+        'accounts.Pupil',
+        on_delete=models.CASCADE,
+        related_name='message_threads',
+        verbose_name='Ученик',
+    )
+    parent = models.ForeignKey(
+        'accounts.Parent',
+        on_delete=models.CASCADE,
+        related_name='message_threads',
+        verbose_name='Родитель',
+    )
+    teacher = models.ForeignKey(
+        'accounts.Teacher',
+        on_delete=models.CASCADE,
+        related_name='message_threads',
+        verbose_name='Педагог',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Переписка'
+        verbose_name_plural = 'Переписки'
+        ordering = ['-updated_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['pupil', 'parent', 'teacher'],
+                name='unique_message_thread',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.pupil} — {self.teacher}'
+
+
+class Message(models.Model):
+    """Сообщение в переписке родитель ↔ педагог."""
+    thread = models.ForeignKey(
+        MessageThread,
+        on_delete=models.CASCADE,
+        related_name='messages',
+        verbose_name='Переписка',
+    )
+    author = models.ForeignKey(
+        'auth.User',
+        on_delete=models.CASCADE,
+        related_name='authored_messages',
+        verbose_name='Автор',
+    )
+    body = models.TextField(verbose_name='Текст')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Отправлено')
+    read_by_parent = models.BooleanField(default=False, verbose_name='Прочитано родителем')
+    read_by_teacher = models.BooleanField(default=False, verbose_name='Прочитано педагогом')
+
+    class Meta:
+        verbose_name = 'Сообщение'
+        verbose_name_plural = 'Сообщения'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'{self.author.username}: {self.body[:40]}'
+

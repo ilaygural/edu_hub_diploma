@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
-from .models import Course, Tag, CourseReview, Application
+from .models import Course, Tag, CourseReview, Application, MessageThread, Message
 
 
 @admin.action(description="Опубликовать выбранные курсы")
@@ -95,6 +95,24 @@ class CourseReviewAdmin(admin.ModelAdmin):
     @admin.action(description='Опубликовать выбранные отзывы')
     def make_published(self, request, queryset):
         queryset.update(is_published=True)
+
+
+class MessageInline(admin.TabularInline):
+    model = Message
+    extra = 0
+    readonly_fields = ['author', 'body', 'created_at', 'read_by_parent', 'read_by_teacher']
+
+
+@admin.register(MessageThread)
+class MessageThreadAdmin(admin.ModelAdmin):
+    list_display = ['pupil', 'parent', 'teacher', 'updated_at']
+    list_filter = ['teacher', 'parent']
+    search_fields = [
+        'pupil__user__last_name',
+        'parent__user__last_name',
+        'teacher__user__last_name',
+    ]
+    inlines = [MessageInline]
 
 
 @admin.register(Application)

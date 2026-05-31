@@ -14,4 +14,9 @@
         Сформировать КТП
     </a>
 
+    <a href="{% url 'teacher_messages' %}" class="d-block mb-2">
+        Сообщения с родителями
+        {% if unread_messages_count %}<span class="badge bg-danger">{{ unread_messages_count }}</span>{% endif %}
+    </a>
+
 </div>

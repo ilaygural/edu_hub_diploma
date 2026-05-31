@@ -50,7 +50,8 @@ class PupilAdmin(admin.ModelAdmin):
 class TeacherAdmin(admin.ModelAdmin):
     list_display = ['get_full_name', 'specialization', 'experience_years', 'is_active']
     list_filter = ['is_active', 'specialization']
-    search_fields = ['user__first_name', 'user__last_name']
+    search_fields = ['user__first_name', 'user__last_name', 'patronymic']
+    fields = ['user', 'patronymic', 'qualification', 'specialization', 'experience_years', 'phone', 'office', 'is_active']
 
 
 @admin.register(Parent)

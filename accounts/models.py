@@ -134,6 +134,18 @@ class Pupil(models.Model):
 
     get_email.short_description = 'Email'
 
+    @property
+    def fio(self):
+        parts = [
+            self.user.last_name.strip(),
+            self.user.first_name.strip(),
+            self.patronymic.strip(),
+        ]
+        label = ' '.join(p for p in parts if p)
+        if label:
+            return label
+        return self.user.get_full_name().strip() or self.user.username
+
     def contract_filled_fields(self) -> tuple[list[str], list[str]]:
         """(заполнено, не заполнено) — ключевые поля для договора."""
         user = self.user
@@ -169,6 +181,7 @@ class Teacher(models.Model):
     specialization = models.CharField(max_length=200, blank=True, verbose_name="Специализация")
     experience_years = models.IntegerField(default=0, verbose_name="Стаж(лет)")
     phone = models.CharField(max_length=20, blank=True, verbose_name="Телефон")
+    patronymic = models.CharField(max_length=100, blank=True, verbose_name='Отчество')
     office = models.CharField(max_length=50, blank=True, verbose_name="Кабинет")
     is_active = models.BooleanField(default=True, verbose_name='Активный')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -190,6 +203,15 @@ class Teacher(models.Model):
         return self.user.get_full_name()
 
     get_full_name.short_description = 'ФИО'
+
+    @property
+    def name_for_parent(self):
+        """Имя и отчество — для обращения в переписке с родителями."""
+        parts = [self.user.first_name.strip(), self.patronymic.strip()]
+        label = ' '.join(p for p in parts if p)
+        if label:
+            return label
+        return self.user.get_full_name().strip() or self.user.username
 
 
 class Parent(models.Model):
@@ -259,6 +281,19 @@ class Parent(models.Model):
         return self.user.get_full_name()
 
     get_full_name.short_description = 'ФИО'
+
+    @property
+    def fio(self):
+        """Фамилия, имя, отчество — для отображения педагогу."""
+        parts = [
+            self.user.last_name.strip(),
+            self.user.first_name.strip(),
+            self.patronymic.strip(),
+        ]
+        label = ' '.join(p for p in parts if p)
+        if label:
+            return label
+        return self.user.get_full_name().strip() or self.user.username
 
     def contract_filled_fields(self) -> tuple[list[str], list[str]]:
         user = self.user
